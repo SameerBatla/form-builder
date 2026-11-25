@@ -1,0 +1,41 @@
+/* Global only: design tokens, reset and page basics. Component styles live in <Name>.module.css. */
+
+:root {
+  --color-text: #222;
+  --color-muted: #666;
+  --color-surface: #fff;
+  --color-border: #ccc;
+  --color-accent: #2563eb;
+
+  --radius: 8px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
