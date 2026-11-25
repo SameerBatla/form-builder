@@ -1,0 +1,108 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.selected,
+.selected:hover {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-hover);
+}
+
+.selectOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: none;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+}
+
+.grip {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  margin-left: calc(-1 * var(--space-2));
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  color: var(--color-subtle);
+  cursor: grab;
+}
+
+.grip:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.dragging {
+  opacity: 0.45;
+}
+
+/* Drop indicator: a dark line in the gap above or below the card. */
+.dropBefore::before,
+.dropAfter::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-text);
+}
+
+.dropBefore::before {
+  top: calc(-1 * var(--space-2) - 1px);
+}
+
+.dropAfter::after {
+  bottom: calc(-1 * var(--space-2) - 1px);
+}
+
+/* Above the overlay so the buttons stay clickable. */
+.actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.card:hover .actions,
+.selected .actions,
+.actions:focus-within {
+  opacity: 1;
+}
+
+.preview {
+  pointer-events: none;
+}
+
+.issueDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger);
+}

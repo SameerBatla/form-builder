@@ -1,0 +1,32 @@
+/* Shared styles for field inputs and their config panels. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.counter {
+  align-self: flex-end;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.configSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.configSectionTitle {
+  margin-bottom: calc(-1 * var(--space-1));
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}

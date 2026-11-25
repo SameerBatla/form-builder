@@ -17,6 +17,7 @@ export default function AppLayout() {
     <div className={styles.shell}>
       <header className={styles.header}>
         <Link to="/" className={styles.brand}>
+          <span className={styles.mark} aria-hidden="true" />
           Form Builder
         </Link>
       </header>

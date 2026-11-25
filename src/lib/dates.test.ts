@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { formatDate, formatRelativeTime } from './dates'
+import { formatDate, formatRelativeTime, toLocalIsoDate } from './dates'
 
 // Noon UTC keeps the calendar day the same in any time zone within ±11h.
 const now = new Date('2026-11-26T12:00:00.000Z')
@@ -23,5 +23,11 @@ describe('formatRelativeTime', () => {
 describe('formatDate', () => {
   test('day, short month, year', () => {
     expect(formatDate('2026-03-01T12:00:00.000Z')).toBe('1 Mar 2026')
+  })
+})
+
+describe('toLocalIsoDate', () => {
+  test('uses the local calendar date, zero-padded', () => {
+    expect(toLocalIsoDate(new Date(2026, 0, 5, 23, 30))).toBe('2026-01-05')
   })
 })

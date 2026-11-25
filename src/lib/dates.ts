@@ -43,3 +43,10 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   }
   return formatDate(iso)
 }
+
+/** Today's local calendar date as YYYY-MM-DD (what <input type="date"> uses). */
+export function toLocalIsoDate(date: Date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}

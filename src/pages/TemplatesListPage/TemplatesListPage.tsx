@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { countResponsesByTemplate, loadResponses } from '../../storage/responseStore'
 import { loadTemplates, sortByLastEdited } from '../../storage/templateStore'
 import { LinkButton } from '../../ui/Button/Button'
+import IconTile from '../../ui/IconTile/IconTile'
+import { FormIcon, PlusIcon } from '../../ui/icons/icons'
 import TemplateCard from './TemplateCard'
 import styles from './TemplatesListPage.module.css'
 
@@ -20,15 +22,19 @@ export default function TemplatesListPage() {
       <div className={styles.header}>
         <div>
           <h1>Templates</h1>
-          <p className="muted">Design forms, collect responses, export PDFs.</p>
+          <p className={styles.subtitle}>Design forms, collect responses, export PDFs.</p>
         </div>
         <LinkButton to="/templates/new" variant="primary">
+          <PlusIcon />
           New template
         </LinkButton>
       </div>
 
       {templates.length === 0 ? (
         <div className={styles.empty}>
+          <IconTile tone="accent">
+            <FormIcon />
+          </IconTile>
           <h2>No templates yet</h2>
           <p className="muted">
             Create your first form template to start collecting responses.

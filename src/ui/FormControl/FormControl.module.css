@@ -1,0 +1,30 @@
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.requiredMark {
+  margin-left: 2px;
+  color: var(--color-danger);
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger-strong);
+}

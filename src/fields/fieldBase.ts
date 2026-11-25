@@ -49,3 +49,8 @@ export function createDefaultVisibility(): VisibilityRules {
 export function createDefaultRequiredRules(): RequiredRules {
   return { defaultState: 'optional', match: 'all', conditions: [] }
 }
+
+/** Config rules shared by every field type. */
+export function validateFieldBase(field: { label: string }): string[] {
+  return field.label.trim() === '' ? ['Label is required.'] : []
+}

@@ -1,3 +1,4 @@
+import { createId } from '../lib/id'
 import { readCollection, writeRecord } from './collectionStore'
 import type { Template } from './schema'
 import { TEMPLATES_KEY, templateSchema } from './schema'
@@ -20,4 +21,16 @@ export function sortByLastEdited(templates: Template[]): Template[] {
   return templates.toSorted((first, second) =>
     second.updatedAt.localeCompare(first.updatedAt),
   )
+}
+
+/** A new, unsaved template. It is only written to storage on the first Save. */
+export function createBlankTemplate(now: Date = new Date()): Template {
+  const timestamp = now.toISOString()
+  return {
+    id: createId(),
+    title: 'Untitled form',
+    fields: [],
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
 }
