@@ -1,6 +1,13 @@
 import type { FieldId } from '../fields/fieldBase'
 import type { Field, FieldValue } from '../fields/fieldUnion'
-import { getInitialValue, getValueError, isValueEmpty } from '../fields/logicRegistry'
+import { getRequiredRules } from '../fields/fieldUnion'
+import {
+  capturesValue,
+  getInitialValue,
+  getValueError,
+  isValueEmpty,
+  normalizeValue,
+} from '../fields/logicRegistry'
 
 export type FormValues = Record<FieldId, FieldValue>
 
@@ -35,10 +42,11 @@ export function evaluateForm(
 
   for (const field of fields) {
     const initialValue = getInitialValue(field, today)
-    const rawValue = rawValues[field.id] ?? initialValue
+    // `in`, not `??`: a deliberately cleared value (null) must stay cleared.
+    const rawValue = field.id in rawValues ? rawValues[field.id] : initialValue
     const isVisible = field.visibility.defaultState === 'visible'
-    const isRequired = isVisible && field.required?.defaultState === 'required'
-    const value = isVisible ? rawValue : initialValue
+    const isRequired = isVisible && getRequiredRules(field)?.defaultState === 'required'
+    const value = isVisible ? normalizeValue(field, rawValue) : initialValue
 
     let error: string | null = null
     if (isVisible) {
@@ -69,7 +77,9 @@ export function buildSubmission(
     const fieldEvaluation = evaluation.fields[field.id]
     if (fieldEvaluation.isVisible) {
       visibleFieldIds.push(field.id)
-      values[field.id] = fieldEvaluation.value
+      if (capturesValue(field)) {
+        values[field.id] = fieldEvaluation.value
+      }
     }
   }
   return { visibleFieldIds, values }

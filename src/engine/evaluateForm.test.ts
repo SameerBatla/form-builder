@@ -124,3 +124,34 @@ describe('buildSubmission', () => {
     })
   })
 })
+
+describe('evaluateForm: cleared values', () => {
+  test('a value cleared to null stays cleared instead of falling back to the initial value', () => {
+    const field = createField('number', 'qty')
+    if (field.type !== 'number') {
+      throw new Error('expected a number field')
+    }
+    const required: Field = {
+      ...field,
+      required: { ...field.required, defaultState: 'required' },
+    }
+    const evaluation = evaluateForm([required], { qty: null }, today)
+    expect(evaluation.fields.qty).toMatchObject({
+      value: null,
+      error: 'This field is required.',
+    })
+  })
+})
+
+describe('buildSubmission: display-only fields', () => {
+  test('a visible section header is listed in visibleFieldIds but stores no value', () => {
+    const header = createField('sectionHeader', 'intro')
+    const name = textField('name')
+    const evaluation = evaluateForm([header, name], { name: 'Jane' }, today)
+    expect(buildSubmission([header, name], evaluation)).toEqual({
+      visibleFieldIds: ['intro', 'name'],
+      values: { name: 'Jane' },
+    })
+    expect(evaluation.fields.intro.error).toBeNull()
+  })
+})

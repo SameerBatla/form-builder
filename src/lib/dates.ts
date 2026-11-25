@@ -50,3 +50,9 @@ export function toLocalIsoDate(date: Date = new Date()): string {
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
 }
+
+/** "1 Mar 2026" from a YYYY-MM-DD calendar date (read as a local date, never shifted by time zone). */
+export function formatIsoDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  return dateFormat.format(new Date(year, month - 1, day))
+}

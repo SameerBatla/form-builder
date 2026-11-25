@@ -5,6 +5,8 @@ import styles from './FormControl.module.css'
 interface FormControlProps {
   label: ReactNode
   htmlFor: string
+  /** For radio/checkbox groups: render the label as text the group references by id. */
+  isGroupLabel?: boolean
   isRequired?: boolean
   hint?: ReactNode
   /** Rendered below the control with id `${htmlFor}-error` (use it for aria-describedby). */
@@ -16,21 +18,28 @@ interface FormControlProps {
 export default function FormControl({
   label,
   htmlFor,
+  isGroupLabel = false,
   isRequired = false,
   hint,
   error,
   children,
 }: FormControlProps) {
+  const LabelElement = isGroupLabel ? 'span' : 'label'
+
   return (
     <div className={styles.control}>
-      <label htmlFor={htmlFor} className={styles.label}>
+      <LabelElement
+        id={`${htmlFor}-label`}
+        htmlFor={isGroupLabel ? undefined : htmlFor}
+        className={styles.label}
+      >
         {label}
         {isRequired && (
           <span className={styles.requiredMark} aria-hidden="true">
             *
           </span>
         )}
-      </label>
+      </LabelElement>
       {children}
       {hint && !error && <p className={styles.hint}>{hint}</p>}
       {error && (

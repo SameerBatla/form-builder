@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { fieldSchema } from './fieldUnion'
+import { fieldSchema, getRequiredRules } from './fieldUnion'
 import { createField, fieldTypes } from './logicRegistry'
 
 describe('field registry', () => {
@@ -17,7 +17,7 @@ describe('field registry', () => {
       match: 'all',
       conditions: [],
     })
-    expect(field.required).toEqual({
+    expect(getRequiredRules(field)).toEqual({
       defaultState: 'optional',
       match: 'all',
       conditions: [],

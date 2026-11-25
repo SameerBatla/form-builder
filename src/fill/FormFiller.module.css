@@ -64,3 +64,9 @@
     padding: var(--space-4) var(--space-5);
   }
 }
+
+/* A section heading right under the form title doesn't need its own divider. */
+.fields > :first-child:is(h2, h3, h4) {
+  padding-top: 0;
+  border-top: none;
+}

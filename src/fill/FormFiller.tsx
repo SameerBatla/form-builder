@@ -3,13 +3,13 @@ import type { FormEvent } from 'react'
 import type { FormValues } from '../engine/evaluateForm'
 import { buildSubmission, evaluateForm } from '../engine/evaluateForm'
 import type { FieldId } from '../fields/fieldBase'
-import { FieldFillInput } from '../fields/FieldComponents'
+import { FieldRow } from '../fields/FieldComponents'
+import { fieldInputId } from '../fields/fieldInputId'
 import type { Field, FieldValue } from '../fields/fieldUnion'
 import { getInitialValue } from '../fields/logicRegistry'
 import { toLocalIsoDate } from '../lib/dates'
 import { pluralize } from '../lib/format'
 import { Button } from '../ui/Button/Button'
-import FormControl from '../ui/FormControl/FormControl'
 import { AlertCircleIcon } from '../ui/icons/icons'
 import styles from './FormFiller.module.css'
 
@@ -26,9 +26,7 @@ interface FormFillerProps {
   onSubmit: (submission: Submission) => void
 }
 
-function inputIdFor(fieldId: FieldId) {
-  return `fill-${fieldId}`
-}
+const FILL_ID_PREFIX = 'fill'
 
 function createInitialValues(fields: Field[], today: string): FormValues {
   const values: FormValues = {}
@@ -80,7 +78,9 @@ export default function FormFiller({
     setHasAttemptedSubmit(true)
     if (evaluation.firstErrorFieldId !== null) {
       // Focusing also scrolls the first problem into view.
-      document.getElementById(inputIdFor(evaluation.firstErrorFieldId))?.focus()
+      document
+        .getElementById(fieldInputId(FILL_ID_PREFIX, evaluation.firstErrorFieldId))
+        ?.focus()
       return
     }
     onSubmit(buildSubmission(fields, evaluation))
@@ -99,26 +99,18 @@ export default function FormFiller({
           if (!fieldEvaluation.isVisible) {
             return null
           }
-          const inputId = inputIdFor(field.id)
           const showError = hasAttemptedSubmit || touchedFieldIds.has(field.id)
-          const error = showError ? fieldEvaluation.error : null
           return (
-            <FormControl
+            <FieldRow
               key={field.id}
-              label={field.label}
-              htmlFor={inputId}
+              field={field}
+              idPrefix={FILL_ID_PREFIX}
+              value={field.id in values ? values[field.id] : fieldEvaluation.value}
+              onChange={(value) => handleValueChange(field.id, value)}
+              onBlur={() => handleFieldBlur(field.id)}
               isRequired={fieldEvaluation.isRequired}
-              error={error}
-            >
-              <FieldFillInput
-                field={field}
-                value={values[field.id] ?? fieldEvaluation.value}
-                onChange={(value) => handleValueChange(field.id, value)}
-                onBlur={() => handleFieldBlur(field.id)}
-                inputId={inputId}
-                isInvalid={error !== null}
-              />
-            </FormControl>
+              error={showError ? fieldEvaluation.error : null}
+            />
           )
         })}
       </div>

@@ -30,3 +30,19 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
 }
+
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+}
+
+.warning > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}

@@ -1,0 +1,28 @@
+.control {
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--color-surface-muted);
+}
+
+.segment {
+  flex: 1;
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.segment:hover {
+  color: var(--color-text);
+}
+
+.segment[aria-checked='true'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}

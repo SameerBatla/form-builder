@@ -1,12 +1,12 @@
 import { useRef } from 'react'
 import type { DragEvent } from 'react'
-import { FieldFillInput } from '../fields/FieldComponents'
+import { FieldRow } from '../fields/FieldComponents'
 import type { Field } from '../fields/fieldUnion'
+import { getRequiredRules } from '../fields/fieldUnion'
 import { getFieldDefinition, getInitialValue } from '../fields/logicRegistry'
 import { fieldUis } from '../fields/uiRegistry'
 import Badge from '../ui/Badge/Badge'
 import { Button } from '../ui/Button/Button'
-import FormControl from '../ui/FormControl/FormControl'
 import { ArrowDownIcon, ArrowUpIcon, GripIcon, TrashIcon } from '../ui/icons/icons'
 import styles from './CanvasFieldCard.module.css'
 import { DRAG_FIELD_ID } from './dragData'
@@ -55,8 +55,7 @@ export default function CanvasFieldCard({
   const { icon: Icon } = fieldUis[field.type]
   const typeName = getFieldDefinition(field.type).displayName
   const label = field.label.trim() || 'Untitled field'
-  const isRequiredByDefault = field.required?.defaultState === 'required'
-  const previewInputId = `canvas-${field.id}`
+  const isRequiredByDefault = getRequiredRules(field)?.defaultState === 'required'
 
   const handleGripDragStart = (event: DragEvent<HTMLSpanElement>) => {
     event.dataTransfer.setData(DRAG_FIELD_ID, field.id)
@@ -147,20 +146,15 @@ export default function CanvasFieldCard({
         </div>
       </div>
       <div className={styles.preview} inert>
-        <FormControl
-          label={label}
-          htmlFor={previewInputId}
+        <FieldRow
+          field={field}
+          idPrefix="canvas"
+          value={getInitialValue(field, today)}
+          onChange={() => {}}
           isRequired={isRequiredByDefault}
-        >
-          <FieldFillInput
-            field={field}
-            value={getInitialValue(field, today)}
-            onChange={() => {}}
-            inputId={previewInputId}
-            isInvalid={false}
-            isDisabled
-          />
-        </FormControl>
+          error={null}
+          isDisabled
+        />
       </div>
     </li>
   )

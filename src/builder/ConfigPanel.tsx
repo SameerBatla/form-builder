@@ -44,7 +44,7 @@ export default function ConfigPanel({ field, issues, onChange }: ConfigPanelProp
   }
 
   const handleRequiredChange = (isRequired: boolean) => {
-    if (!field.required) {
+    if (!('required' in field)) {
       return
     }
     const defaultState = isRequired ? 'required' : 'optional'
@@ -89,7 +89,7 @@ export default function ConfigPanel({ field, issues, onChange }: ConfigPanelProp
                 onChange={(event) => handleLabelChange(event.target.value)}
               />
             </FormControl>
-            {field.required && (
+            {'required' in field && (
               <Toggle
                 label="Required"
                 isOn={field.required.defaultState === 'required'}

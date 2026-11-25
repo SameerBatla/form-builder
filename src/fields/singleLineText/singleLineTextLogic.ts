@@ -9,6 +9,7 @@ import {
 export const singleLineTextDefinition: FieldDefinition<'singleLineText'> = {
   type: 'singleLineText',
   displayName: 'Single line text',
+  capturesValue: true,
   createField: (id) => {
     return {
       id,
