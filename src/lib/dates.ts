@@ -1,0 +1,45 @@
+const MINUTE = 60_000
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+
+const relativeFormat = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+})
+const dateTimeFormat = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+/** "20 Nov 2026" */
+export function formatDate(iso: string): string {
+  return dateFormat.format(new Date(iso))
+}
+
+/** "20 Nov 2026, 14:32" */
+export function formatDateTime(iso: string): string {
+  return dateTimeFormat.format(new Date(iso))
+}
+
+/** "just now", "5 minutes ago", "yesterday"; falls back to the date after a week. */
+export function formatRelativeTime(iso: string, now: Date = new Date()): string {
+  const elapsed = now.getTime() - new Date(iso).getTime()
+  if (elapsed < MINUTE) {
+    return 'just now'
+  }
+  if (elapsed < HOUR) {
+    return relativeFormat.format(-Math.floor(elapsed / MINUTE), 'minute')
+  }
+  if (elapsed < DAY) {
+    return relativeFormat.format(-Math.floor(elapsed / HOUR), 'hour')
+  }
+  if (elapsed < 7 * DAY) {
+    return relativeFormat.format(-Math.floor(elapsed / DAY), 'day')
+  }
+  return formatDate(iso)
+}

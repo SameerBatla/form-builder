@@ -1,10 +1,8 @@
-import Counter from './components/Counter'
+import { createBrowserRouter, RouterProvider } from 'react-router'
+import { routes } from './routes'
+
+const router = createBrowserRouter(routes)
 
 export default function App() {
-  return (
-    <main>
-      <h1>Interview Starter</h1>
-      <Counter />
-    </main>
-  )
+  return <RouterProvider router={router} />
 }
