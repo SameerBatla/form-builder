@@ -10,6 +10,7 @@ interface BuilderToolbarProps {
   saveStatus: SaveStatus
   isTitleInvalid: boolean
   onTitleChange: (title: string) => void
+  onPreview: () => void
   onSave: () => void
 }
 
@@ -24,6 +25,7 @@ export default function BuilderToolbar({
   saveStatus,
   isTitleInvalid,
   onTitleChange,
+  onPreview,
   onSave,
 }: BuilderToolbarProps) {
   return (
@@ -46,7 +48,7 @@ export default function BuilderToolbar({
         {statusLabels[saveStatus]}
       </span>
       <div className={styles.actions}>
-        <Button disabled title="Available in a later step">
+        <Button onClick={onPreview}>
           <EyeIcon />
           Preview
         </Button>

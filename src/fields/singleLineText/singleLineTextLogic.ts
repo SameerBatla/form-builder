@@ -1,6 +1,10 @@
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
-import { validateLengthLimits } from '../shared/lengthLimits'
+import {
+  isTextEmpty,
+  validateLengthLimits,
+  validateTextLength,
+} from '../shared/lengthLimits'
 
 export const singleLineTextDefinition: FieldDefinition<'singleLineText'> = {
   type: 'singleLineText',
@@ -24,4 +28,7 @@ export const singleLineTextDefinition: FieldDefinition<'singleLineText'> = {
   initialValue: () => '',
   validateConfig: (field) =>
     validateLengthLimits(field.config.minLength, field.config.maxLength),
+  isEmpty: isTextEmpty,
+  validateValue: (field, value) =>
+    validateTextLength(value, field.config.minLength, field.config.maxLength),
 }

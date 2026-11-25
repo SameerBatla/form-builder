@@ -13,6 +13,12 @@ export function loadResponsesForTemplate(templateId: string): FormResponse[] {
   )
 }
 
+export function sortByNewest(responses: FormResponse[]): FormResponse[] {
+  return responses.toSorted((first, second) =>
+    second.submittedAt.localeCompare(first.submittedAt),
+  )
+}
+
 export function countResponsesByTemplate(responses: FormResponse[]): Map<string, number> {
   const counts = new Map<string, number>()
   for (const response of responses) {

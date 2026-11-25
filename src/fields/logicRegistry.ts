@@ -39,3 +39,11 @@ export function getConfigIssues(field: Field): string[] {
     ...getFieldDefinition(field.type).validateConfig(field),
   ]
 }
+
+export function isValueEmpty(field: Field, value: FieldValue): boolean {
+  return getFieldDefinition(field.type).isEmpty(value)
+}
+
+export function getValueError(field: Field, value: FieldValue): string | null {
+  return getFieldDefinition(field.type).validateValue(field, value)
+}

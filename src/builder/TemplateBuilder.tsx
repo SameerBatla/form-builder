@@ -16,6 +16,7 @@ import { builderReducer } from './builderReducer'
 import ConfigPanel from './ConfigPanel'
 import FieldPalette from './FieldPalette'
 import FormCanvas from './FormCanvas'
+import PreviewModal from './PreviewModal'
 import SaveIssuesBar from './SaveIssuesBar'
 import styles from './TemplateBuilder.module.css'
 
@@ -44,6 +45,7 @@ export default function TemplateBuilder({
   // Issues stay hidden until the first blocked Save, then update live.
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false)
   const [today] = useState(() => toLocalIsoDate())
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   // Reference checks are enough: the reducer only creates new objects on real edits.
   const hasUnsavedChanges =
@@ -142,6 +144,7 @@ export default function TemplateBuilder({
         saveStatus={saveStatus}
         isTitleInvalid={visibleIssues !== null && state.title.trim() === ''}
         onTitleChange={handleTitleChange}
+        onPreview={() => setIsPreviewOpen(true)}
         onSave={handleSave}
       />
       <div className={styles.panels}>
@@ -181,6 +184,13 @@ export default function TemplateBuilder({
           />
         </aside>
       </div>
+      {isPreviewOpen && (
+        <PreviewModal
+          title={state.title}
+          fields={state.fields}
+          onClose={() => setIsPreviewOpen(false)}
+        />
+      )}
       {blocker.state === 'blocked' && (
         <ConfirmDialog
           title="Discard unsaved changes?"

@@ -2,6 +2,7 @@ import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { createField } from '../fields/logicRegistry'
+import { loadResponsesForTemplate } from '../storage/responseStore'
 import { loadTemplate, loadTemplates, saveTemplate } from '../storage/templateStore'
 import { buildTemplate } from '../test/fixtures'
 import { renderRoute } from '../test/renderRoute'
@@ -200,5 +201,37 @@ describe('reordering', () => {
     fireEvent.drop(cardA, { dataTransfer })
 
     expect(canvasLabels()).toEqual(['A', 'Single line text', 'B', 'C'])
+  })
+})
+
+describe('preview', () => {
+  test('previews unsaved changes, validates on submit, and saves nothing', async () => {
+    const user = userEvent.setup()
+    saveTemplate(buildTemplate('t1'))
+    renderRoute('/templates/t1/edit')
+
+    // Unsaved edits: rename the field and make it required.
+    const labelInput = screen.getByRole('textbox', { name: 'Label' })
+    await user.clear(labelInput)
+    await user.type(labelInput, 'Email')
+    await user.click(screen.getByRole('switch', { name: 'Required' }))
+
+    await user.click(screen.getByRole('button', { name: 'Preview' }))
+    const preview = screen.getByRole('dialog', { name: 'Form preview' })
+    const emailInput = within(preview).getByRole('textbox', { name: /email/i })
+
+    await user.click(within(preview).getByRole('button', { name: 'Submit' }))
+    expect(within(preview).getByText('This field is required.')).toBeInTheDocument()
+
+    await user.type(emailInput, 'jane@example.com')
+    await user.click(within(preview).getByRole('button', { name: 'Submit' }))
+    expect(
+      within(preview).getByText('This response would be accepted'),
+    ).toBeInTheDocument()
+    expect(loadResponsesForTemplate('t1')).toHaveLength(0)
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: 'Form preview' })).not.toBeInTheDocument()
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
   })
 })

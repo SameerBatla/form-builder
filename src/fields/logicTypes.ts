@@ -15,4 +15,8 @@ export interface FieldDefinition<T extends FieldType> {
   initialValue: (field: FieldOfType<T>, today: string) => FieldValueOf<T>
   /** Builder-side problems with this field's settings (label is checked separately). */
   validateConfig: (field: FieldOfType<T>) => string[]
+  /** "No answer". Required checks and "—" in exports are based on this. */
+  isEmpty: (value: FieldValueOf<T>) => boolean
+  /** Fill-time rules for a non-empty value. Required is checked by the engine, not here. */
+  validateValue: (field: FieldOfType<T>, value: FieldValueOf<T>) => string | null
 }
