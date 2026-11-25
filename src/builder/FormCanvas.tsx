@@ -113,6 +113,7 @@ export default function FormCanvas({
           <CanvasFieldCard
             key={field.id}
             field={field}
+            fields={fields}
             isSelected={field.id === selectedFieldId}
             hasIssues={field.id in fieldIssues}
             isFirst={index === 0}

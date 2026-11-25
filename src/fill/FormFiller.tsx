@@ -6,7 +6,7 @@ import type { FieldId } from '../fields/fieldBase'
 import { FieldRow } from '../fields/FieldComponents'
 import { fieldInputId } from '../fields/fieldInputId'
 import type { Field, FieldValue } from '../fields/fieldUnion'
-import { getInitialValue } from '../fields/logicRegistry'
+import { getInitialValue, isComputedField } from '../fields/logicRegistry'
 import { toLocalIsoDate } from '../lib/dates'
 import { pluralize } from '../lib/format'
 import { Button } from '../ui/Button/Button'
@@ -31,7 +31,10 @@ const FILL_ID_PREFIX = 'fill'
 function createInitialValues(fields: Field[], today: string): FormValues {
   const values: FormValues = {}
   for (const field of fields) {
-    values[field.id] = getInitialValue(field, today)
+    // Calculations are never typed; the engine computes them from their sources.
+    if (!isComputedField(field)) {
+      values[field.id] = getInitialValue(field, today)
+    }
   }
   return values
 }
@@ -104,6 +107,7 @@ export default function FormFiller({
             <FieldRow
               key={field.id}
               field={field}
+              fields={fields}
               idPrefix={FILL_ID_PREFIX}
               value={field.id in values ? values[field.id] : fieldEvaluation.value}
               onChange={(value) => handleValueChange(field.id, value)}

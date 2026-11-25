@@ -14,14 +14,15 @@ import { fieldUis } from './uiRegistry'
 
 interface FieldConfigPanelProps {
   field: Field
+  fields: Field[]
   onChange: (field: Field) => void
 }
 
-export function FieldConfigPanel({ field, onChange }: FieldConfigPanelProps) {
+export function FieldConfigPanel({ field, fields, onChange }: FieldConfigPanelProps) {
   const ConfigPanel = fieldUis[field.type].ConfigPanel as ComponentType<
     ConfigPanelProps<FieldType>
   >
-  return <ConfigPanel field={field} onChange={onChange} />
+  return <ConfigPanel field={field} fields={fields} onChange={onChange} />
 }
 
 type FieldFillInputProps = FillInputProps<FieldType>
@@ -34,6 +35,8 @@ export function FieldFillInput(props: FieldFillInputProps) {
 
 interface FieldRowProps {
   field: Field
+  /** Every field in the form, for types that refer to others. */
+  fields: Field[]
   value: FieldValue
   onChange: (value: FieldValue) => void
   onBlur?: () => void

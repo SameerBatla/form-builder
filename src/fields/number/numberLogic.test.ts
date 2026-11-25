@@ -4,8 +4,8 @@ import {
   isAllowedNumberDraft,
   numberDefinition as definition,
   parseNumberDraft,
-  roundToDecimals,
 } from './numberLogic'
+import { roundToDecimals } from '../../lib/numbers'
 
 const field = definition.createField('price')
 

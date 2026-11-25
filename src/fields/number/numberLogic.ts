@@ -1,3 +1,4 @@
+import { roundToDecimals } from '../../lib/numbers'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 
@@ -8,6 +9,7 @@ export const numberDefinition: FieldDefinition<'number'> = {
   displayName: 'Number',
   capturesValue: true,
   conditionKinds: ['number', 'numberRange'],
+  isCalculationSource: true,
   createField: (id) => {
     return {
       id,
@@ -52,12 +54,6 @@ export const numberDefinition: FieldDefinition<'number'> = {
   },
   normalizeValue: (field, value) =>
     value === null ? null : roundToDecimals(value, field.config.decimalPlaces),
-}
-
-/** Rounds half away from zero. Shifting via exponent strings avoids 1.005 → 1.00. */
-export function roundToDecimals(value: number, decimalPlaces: number): number {
-  const shifted = Math.round(Math.abs(Number(`${value}e${decimalPlaces}`)))
-  return Math.sign(value) * Number(`${shifted}e-${decimalPlaces}`)
 }
 
 /** What the input accepts while typing: digits, a leading minus, and one point if decimals are allowed. */

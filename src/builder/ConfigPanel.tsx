@@ -105,7 +105,7 @@ export default function ConfigPanel({
                 onChange={handleRequiredChange}
               />
             )}
-            <FieldConfigPanel field={field} onChange={onChange} />
+            <FieldConfigPanel field={field} fields={fields} onChange={onChange} />
           </>
         ) : (
           <LogicTab field={field} fields={fields} onChange={onChange} />

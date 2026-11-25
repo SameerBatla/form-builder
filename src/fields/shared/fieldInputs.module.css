@@ -46,3 +46,12 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+}
+
+.readOnly {
+  background: var(--color-surface-muted);
+}

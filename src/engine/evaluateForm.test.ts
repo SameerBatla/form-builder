@@ -255,3 +255,65 @@ describe('evaluateForm: conditional logic', () => {
     expect(evaluateForm(fields, {}, today).firstErrorFieldId).toBe('second')
   })
 })
+
+describe('evaluateForm: calculation', () => {
+  function numberField(
+    id: string,
+    options: { hideWhen?: ReturnType<typeof whenText>[] } = {},
+  ) {
+    const field = createField('number', id)
+    if (field.type !== 'number') {
+      throw new Error('expected number')
+    }
+    return {
+      ...field,
+      label: id,
+      visibility: {
+        ...field.visibility,
+        conditions: options.hideWhen ?? [],
+      },
+    }
+  }
+  function total(sourceFieldIds: string[]) {
+    const field = createField('calculation', 'total')
+    if (field.type !== 'calculation') {
+      throw new Error('expected calculation')
+    }
+    return { ...field, config: { ...field.config, sourceFieldIds } }
+  }
+
+  test('sums the visible source values, and is stored computed in the submission', () => {
+    const fields = [
+      numberField('price'),
+      numberField('shipping'),
+      total(['price', 'shipping']),
+    ]
+    // Sources are used as stored: shipping has 0 decimal places, so 7.4 counts as 7.
+    const evaluation = evaluateForm(fields, { price: 100, shipping: 7.4 }, today)
+    expect(evaluation.fields.total.value).toBe(107)
+    expect(buildSubmission(fields, evaluation).values.total).toBe(107)
+  })
+
+  test('works even when the calculation is above its sources in the form', () => {
+    const fields = [total(['price']), numberField('price')]
+    expect(evaluateForm(fields, { price: 3 }, today).fields.total.value).toBe(3)
+  })
+
+  test('spec Q14: a source hidden by a rule stops counting immediately', () => {
+    const fields = [
+      ruleField('pickup'),
+      numberField('price'),
+      numberField('shipping', { hideWhen: [whenText('pickup', 'yes')] }),
+      total(['price', 'shipping']),
+    ]
+    const values = { pickup: 'yes', price: 100, shipping: 5 }
+    expect(evaluateForm(fields, values, today).fields.total.value).toBe(100)
+  })
+
+  test('a user-typed value for a calculation is ignored', () => {
+    const fields = [numberField('price'), total(['price'])]
+    expect(evaluateForm(fields, { price: 1, total: 999 }, today).fields.total.value).toBe(
+      1,
+    )
+  })
+})

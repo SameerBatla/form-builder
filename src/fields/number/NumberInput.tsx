@@ -2,12 +2,8 @@ import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import TextInput from '../../ui/TextInput/TextInput'
 import type { FillInputProps } from '../uiTypes'
-import {
-  formatNumberDraft,
-  isAllowedNumberDraft,
-  parseNumberDraft,
-  roundToDecimals,
-} from './numberLogic'
+import { formatNumberDraft, isAllowedNumberDraft, parseNumberDraft } from './numberLogic'
+import { roundToDecimals } from '../../lib/numbers'
 
 /*
  * Keeps the raw text the user is typing ("1.", "-") so it isn't reformatted

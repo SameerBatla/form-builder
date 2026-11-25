@@ -1,7 +1,11 @@
 import type { FieldId } from '../fields/fieldBase'
 import type { Field } from '../fields/fieldUnion'
 import { getRequiredRules } from '../fields/fieldUnion'
-import { getConfigIssues } from '../fields/logicRegistry'
+import {
+  getConfigIssues,
+  getReferencedFieldIds,
+  isCalculationSource,
+} from '../fields/logicRegistry'
 import { validateCondition } from './conditionBuilder'
 import { findDependencyCycle } from './dependencies'
 
@@ -44,6 +48,7 @@ export function validateTemplate(form: {
     ]
     const issues = [
       ...getConfigIssues(field),
+      ...validateSources(field, form.fields),
       ...conditions.flatMap((condition) =>
         validateCondition(condition, form.fields, field.id),
       ),
@@ -53,6 +58,22 @@ export function validateTemplate(form: {
     }
   }
   return { formIssues, fieldIssues }
+}
+
+/** Config references (Calculation sources) must exist and be Number fields. */
+function validateSources(field: Field, fields: Field[]): string[] {
+  for (const sourceId of getReferencedFieldIds(field)) {
+    const source = fields.find((candidate) => candidate.id === sourceId)
+    if (!source) {
+      return ['A source field no longer exists.']
+    }
+    if (!isCalculationSource(source)) {
+      return [
+        'Sources must be Number fields (a calculation can’t use another calculation).',
+      ]
+    }
+  }
+  return []
 }
 
 /** Form-level issues plus the number of fields that have issues. */

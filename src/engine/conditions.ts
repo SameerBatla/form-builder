@@ -1,13 +1,10 @@
 import type { Condition } from '../fields/conditionSchema'
 import type { RuleMatch } from '../fields/fieldBase'
 import type { FieldValue } from '../fields/fieldUnion'
+import type { ResolvedField } from '../fields/logicTypes'
 
 /** What a condition can see of its target field, after the target was evaluated. */
-export interface TargetState {
-  isVisible: boolean
-  isEmpty: boolean
-  value: FieldValue
-}
+export type TargetState = ResolvedField
 
 function normalizeText(text: string): string {
   return text.trim().toLowerCase()

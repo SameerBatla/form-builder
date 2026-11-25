@@ -22,6 +22,7 @@ function Harness({ onValue }: { onValue: (value: NumberValue) => void }) {
         setValue(next)
         onValue(next)
       }}
+      fields={[]}
       inputId="price"
       labelId="price-label"
       isRequired={false}

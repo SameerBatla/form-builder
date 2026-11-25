@@ -4,6 +4,7 @@ import type { Field, FieldValue } from '../fields/fieldUnion'
 import { getRequiredRules } from '../fields/fieldUnion'
 import {
   capturesValue,
+  computeFieldValue,
   getInitialValue,
   getValueError,
   isValueEmpty,
@@ -78,8 +79,16 @@ export function evaluateForm(
     }
 
     const initialValue = getInitialValue(field, today)
-    // `in`, not `??`: a deliberately cleared value (null) must stay cleared.
-    const rawValue = field.id in rawValues ? rawValues[field.id] : initialValue
+    // Derived fields (Calculation) compute from their sources, which the
+    // dependency order guarantees are already evaluated.
+    const computedValue = computeFieldValue(field, getTargetState)
+    let rawValue: FieldValue = initialValue
+    if (computedValue !== undefined) {
+      rawValue = computedValue
+    } else if (field.id in rawValues) {
+      // `in`, not `??`: a deliberately cleared value (null) must stay cleared.
+      rawValue = rawValues[field.id]
+    }
     const value = isVisible ? normalizeValue(field, rawValue) : initialValue
 
     let error: string | null = null

@@ -89,3 +89,22 @@ describe('validateTemplate: rules', () => {
     ])
   })
 })
+
+describe('validateTemplate: calculation sources', () => {
+  test('spec: a calculation cannot use another calculation as a source', () => {
+    const first = createField('calculation', 'first')
+    const second = createField('calculation', 'second')
+    if (second.type !== 'calculation') {
+      throw new Error('expected calculation')
+    }
+    const usesFirst = {
+      ...second,
+      config: { ...second.config, sourceFieldIds: ['first'] },
+    }
+    expect(
+      validateTemplate({ title: 'T', fields: [first, usesFirst] }).fieldIssues.second,
+    ).toContain(
+      'Sources must be Number fields (a calculation can’t use another calculation).',
+    )
+  })
+})

@@ -22,6 +22,7 @@ export type DropPosition = 'before' | 'after' | null
 
 interface CanvasFieldCardProps {
   field: Field
+  fields: Field[]
   isSelected: boolean
   hasIssues: boolean
   isFirst: boolean
@@ -43,6 +44,7 @@ interface CanvasFieldCardProps {
 /** One field on the canvas: a disabled live preview of the real fill-mode input. */
 export default function CanvasFieldCard({
   field,
+  fields,
   isSelected,
   hasIssues,
   isFirst,
@@ -170,6 +172,7 @@ export default function CanvasFieldCard({
       <div className={styles.preview} inert>
         <FieldRow
           field={field}
+          fields={fields}
           idPrefix="canvas"
           value={getInitialValue(field, today)}
           onChange={() => {}}

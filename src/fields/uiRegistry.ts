@@ -6,9 +6,12 @@ import {
   NumberIcon,
   PaperclipIcon,
   RadioIcon,
+  SigmaIcon,
   TextIcon,
 } from '../ui/icons/icons'
 import type { FieldType } from './fieldUnion'
+import CalculationConfig from './calculation/CalculationConfig'
+import CalculationInput from './calculation/CalculationInput'
 import DateConfig from './date/DateConfig'
 import DateInput from './date/DateInput'
 import FileUploadConfig from './fileUpload/FileUploadConfig'
@@ -92,6 +95,14 @@ export const fieldUis: { [T in FieldType]: FieldUi<T> } = {
     labelLayout: 'none',
     ConfigPanel: SectionHeaderConfig,
     FillInput: SectionHeaderInput,
+  },
+  calculation: {
+    icon: SigmaIcon,
+    description: 'Sum, average, min or max of numbers',
+    group: 'layout',
+    labelLayout: 'label',
+    ConfigPanel: CalculationConfig,
+    FillInput: CalculationInput,
   },
 }
 

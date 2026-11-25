@@ -2,7 +2,8 @@ import type { ConditionKind } from './conditionSchema'
 import type { FieldId, Option } from './fieldBase'
 import { validateFieldBase } from './fieldBase'
 import type { Field, FieldType, FieldValue } from './fieldUnion'
-import type { FieldDefinition } from './logicTypes'
+import type { FieldDefinition, ResolvedField } from './logicTypes'
+import { calculationDefinition } from './calculation/calculationLogic'
 import { sectionHeaderDefinition } from './sectionHeader/sectionHeaderLogic'
 import { fileUploadDefinition } from './fileUpload/fileUploadLogic'
 import { multiSelectDefinition } from './multiSelect/multiSelectLogic'
@@ -22,6 +23,7 @@ export const fieldDefinitions: { [T in FieldType]: FieldDefinition<T> } = {
   multiSelect: multiSelectDefinition,
   fileUpload: fileUploadDefinition,
   sectionHeader: sectionHeaderDefinition,
+  calculation: calculationDefinition,
 }
 
 // Object.keys is always typed string[]; the mapped type above guarantees these are FieldTypes.
@@ -86,6 +88,23 @@ export function getReferencedFieldIds(field: Field): FieldId[] {
 
 export function removeConfigReference(field: Field, removedId: FieldId): Field {
   return getFieldDefinition(field.type).removeFieldReference?.(field, removedId) ?? field
+}
+
+/** The computed value for derived fields; undefined for fields the user fills in. */
+export function computeFieldValue(
+  field: Field,
+  getField: (id: FieldId) => ResolvedField | null,
+): FieldValue | undefined {
+  return getFieldDefinition(field.type).computeValue?.(field, getField)
+}
+
+/** Derived fields (Calculation) have no typed value; the engine computes it. */
+export function isComputedField(field: Field): boolean {
+  return getFieldDefinition(field.type).computeValue !== undefined
+}
+
+export function isCalculationSource(field: Field): boolean {
+  return getFieldDefinition(field.type).isCalculationSource ?? false
 }
 
 export function capturesValue(field: Field): boolean {

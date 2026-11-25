@@ -1,4 +1,9 @@
 import { z } from 'zod'
+import type { CalculationValue } from './calculation/calculationSchema'
+import {
+  calculationFieldSchema,
+  calculationValueSchema,
+} from './calculation/calculationSchema'
 import type { RequiredRules } from './fieldBase'
 import type { SectionHeaderValue } from './sectionHeader/sectionHeaderSchema'
 import {
@@ -37,6 +42,7 @@ import {
 
 // Adding a field type: add it to the two lists and to FieldValueMap below.
 export const fieldSchema = z.discriminatedUnion('type', [
+  calculationFieldSchema,
   sectionHeaderFieldSchema,
   fileUploadFieldSchema,
   multiSelectFieldSchema,
@@ -47,6 +53,7 @@ export const fieldSchema = z.discriminatedUnion('type', [
   multiLineTextFieldSchema,
 ])
 export const fieldValueSchema = z.union([
+  calculationValueSchema,
   sectionHeaderValueSchema,
   fileUploadValueSchema,
   multiSelectValueSchema,
@@ -64,6 +71,7 @@ export type FieldValue = z.infer<typeof fieldValueSchema>
 
 /** The value each field type holds while filling. Indexing by FieldType forces an entry per type. */
 export interface FieldValueMap {
+  calculation: CalculationValue
   sectionHeader: SectionHeaderValue
   fileUpload: FileUploadValue
   multiSelect: MultiSelectValue

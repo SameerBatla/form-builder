@@ -1,6 +1,13 @@
 import type { ConditionKind } from './conditionSchema'
 import type { FieldId, Option } from './fieldBase'
-import type { FieldOfType, FieldType, FieldValueOf } from './fieldUnion'
+import type { FieldOfType, FieldType, FieldValue, FieldValueOf } from './fieldUnion'
+
+/** What one field can see of another, after that other field was evaluated. */
+export interface ResolvedField {
+  isVisible: boolean
+  isEmpty: boolean
+  value: FieldValue
+}
 
 /**
  * The contract every field type implements. Builder, fill, engine and export ask
@@ -25,6 +32,16 @@ export interface FieldDefinition<T extends FieldType> {
   conditionKinds?: ConditionKind[]
   /** Select types: their options, for rule values and option clean-up. */
   getOptions?(field: FieldOfType<T>): Option[]
+  /** Number fields set this: they can be Calculation sources (Calculations can't). */
+  isCalculationSource?: boolean
+  /**
+   * Derived fields (Calculation) compute their value from other fields instead of
+   * user input. `getField` returns null for a missing field.
+   */
+  computeValue?(
+    field: FieldOfType<T>,
+    getField: (id: FieldId) => ResolvedField | null,
+  ): FieldValueOf<T>
   /** Other fields this field's own config reads (e.g. Calculation sources). Rules are separate. */
   referencedFieldIds?(field: FieldOfType<T>): FieldId[]
   /** Drop a deleted field from this field's own config (e.g. a Calculation source). */

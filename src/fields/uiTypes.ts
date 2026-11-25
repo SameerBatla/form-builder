@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { IconProps } from '../ui/icons/icons'
-import type { FieldOfType, FieldType, FieldValueOf } from './fieldUnion'
+import type { Field, FieldOfType, FieldType, FieldValueOf } from './fieldUnion'
 
 /** Props every field type's fill-mode input receives. */
 export interface FillInputProps<T extends FieldType> {
@@ -16,11 +16,15 @@ export interface FillInputProps<T extends FieldType> {
   isInvalid: boolean
   /** Builder canvas preview: shown but not interactive. */
   isDisabled?: boolean
+  /** Every field in the form, for types that refer to others (Calculation). */
+  fields: Field[]
 }
 
 /** Props every field type's builder settings panel receives. */
 export interface ConfigPanelProps<T extends FieldType> {
   field: FieldOfType<T>
+  /** Every field in the form, for types that refer to others (Calculation). */
+  fields: Field[]
   onChange: (field: FieldOfType<T>) => void
 }
 
