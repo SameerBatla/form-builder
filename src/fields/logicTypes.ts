@@ -1,4 +1,5 @@
-import type { FieldId } from './fieldBase'
+import type { ConditionKind } from './conditionSchema'
+import type { FieldId, Option } from './fieldBase'
 import type { FieldOfType, FieldType, FieldValueOf } from './fieldUnion'
 
 /**
@@ -20,6 +21,14 @@ export interface FieldDefinition<T extends FieldType> {
   isEmpty(value: FieldValueOf<T>): boolean
   /** Fill-time rules for a non-empty value. Required is checked by the engine, not here. */
   validateValue(field: FieldOfType<T>, value: FieldValueOf<T>): string | null
+  /** Operator families other fields can use when this field is a rule target. None → not a target. */
+  conditionKinds?: ConditionKind[]
+  /** Select types: their options, for rule values and option clean-up. */
+  getOptions?(field: FieldOfType<T>): Option[]
+  /** Other fields this field's own config reads (e.g. Calculation sources). Rules are separate. */
+  referencedFieldIds?(field: FieldOfType<T>): FieldId[]
+  /** Drop a deleted field from this field's own config (e.g. a Calculation source). */
+  removeFieldReference?(field: FieldOfType<T>, removedId: FieldId): FieldOfType<T>
   /** Optional clean-up before a value is used or stored (e.g. Number rounding). */
   normalizeValue?(field: FieldOfType<T>, value: FieldValueOf<T>): FieldValueOf<T>
 }

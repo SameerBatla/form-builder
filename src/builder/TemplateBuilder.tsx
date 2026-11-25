@@ -1,9 +1,13 @@
 import { useEffect, useReducer, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router'
+import type { FieldReference } from '../engine/references'
+import { findFieldReferences, findOptionRuleImpact } from '../engine/references'
 import { countIssues, validateTemplate } from '../engine/validateTemplate'
 import type { FieldId } from '../fields/fieldBase'
 import type { Field, FieldType } from '../fields/fieldUnion'
+import { getFieldOptions } from '../fields/logicRegistry'
 import { toLocalIsoDate } from '../lib/dates'
+import { pluralize } from '../lib/format'
 import { createId } from '../lib/id'
 import type { Template } from '../storage/schema'
 import { templateSchema } from '../storage/schema'
@@ -19,6 +23,35 @@ import FormCanvas from './FormCanvas'
 import PreviewModal from './PreviewModal'
 import SaveIssuesBar from './SaveIssuesBar'
 import styles from './TemplateBuilder.module.css'
+
+/** A change that needs the builder's confirmation because it also removes rules. */
+type PendingChange =
+  | { kind: 'deleteField'; fieldId: FieldId; label: string; references: FieldReference[] }
+  | {
+      kind: 'removeOptions'
+      field: Field
+      removedLabels: string[]
+      affectedLabels: string[]
+    }
+
+function describeReference(reference: FieldReference): string {
+  const parts: string[] = []
+  if (reference.ruleCount > 0) {
+    parts.push(`${pluralize(reference.ruleCount, 'rule')} in “${reference.label}”`)
+  }
+  if (reference.usesAsSource) {
+    parts.push(`the calculation “${reference.label}”`)
+  }
+  return parts.join(' and ')
+}
+
+function describeOptionImpact(removedLabels: string[], affectedLabels: string[]): string {
+  const quote = (labels: string[]) => labels.map((label) => `“${label}”`).join(', ')
+  const verb = removedLabels.length === 1 ? 'is' : 'are'
+  return `${quote(removedLabels)} ${verb} used in rules on ${quote(affectedLabels)}. Removing ${
+    removedLabels.length === 1 ? 'it' : 'them'
+  } also updates or removes those rules.`
+}
 
 function toBuilderState(template: Template): BuilderState {
   return {
@@ -46,6 +79,7 @@ export default function TemplateBuilder({
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false)
   const [today] = useState(() => toLocalIsoDate())
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [pendingChange, setPendingChange] = useState<PendingChange | null>(null)
 
   // Reference checks are enough: the reducer only creates new objects on real edits.
   const hasUnsavedChanges =
@@ -92,6 +126,17 @@ export default function TemplateBuilder({
   }
 
   const handleUpdateField = (field: Field) => {
+    // Removing a select option that rules use: confirm first (Q10).
+    const affectedLabels = findOptionRuleImpact(state.fields, field)
+    if (affectedLabels.length > 0) {
+      const previous = state.fields.find((candidate) => candidate.id === field.id)
+      const keptIds = new Set(getFieldOptions(field).map((option) => option.id))
+      const removedLabels = (previous ? getFieldOptions(previous) : [])
+        .filter((option) => !keptIds.has(option.id))
+        .map((option) => option.label.trim() || 'Untitled option')
+      setPendingChange({ kind: 'removeOptions', field, removedLabels, affectedLabels })
+      return
+    }
     dispatch({ type: 'updateField', field })
   }
 
@@ -104,7 +149,24 @@ export default function TemplateBuilder({
   }
 
   const handleDeleteField = (fieldId: FieldId) => {
+    // Deleting a field other fields depend on: confirm, then cascade (Q9).
+    const references = findFieldReferences(state.fields, fieldId)
+    if (references.length > 0) {
+      const field = state.fields.find((candidate) => candidate.id === fieldId)
+      const label = field?.label.trim() || 'Untitled field'
+      setPendingChange({ kind: 'deleteField', fieldId, label, references })
+      return
+    }
     dispatch({ type: 'deleteField', fieldId })
+  }
+
+  const handleConfirmPendingChange = () => {
+    if (pendingChange?.kind === 'deleteField') {
+      dispatch({ type: 'deleteField', fieldId: pendingChange.fieldId })
+    } else if (pendingChange?.kind === 'removeOptions') {
+      dispatch({ type: 'updateField', field: pendingChange.field })
+    }
+    setPendingChange(null)
   }
 
   const handleTitleChange = (title: string) => {
@@ -175,6 +237,7 @@ export default function TemplateBuilder({
         <aside className={styles.config} aria-label="Field settings">
           <ConfigPanel
             field={selectedField}
+            fields={state.fields}
             issues={
               selectedField && visibleIssues
                 ? (visibleIssues.fieldIssues[selectedField.id] ?? [])
@@ -190,6 +253,39 @@ export default function TemplateBuilder({
           fields={state.fields}
           onClose={() => setIsPreviewOpen(false)}
         />
+      )}
+      {pendingChange?.kind === 'deleteField' && (
+        <ConfirmDialog
+          title={`Delete “${pendingChange.label}”?`}
+          confirmLabel="Delete field and rules"
+          tone="danger"
+          onConfirm={handleConfirmPendingChange}
+          onCancel={() => setPendingChange(null)}
+        >
+          <p>Other fields use it:</p>
+          <ul>
+            {pendingChange.references.map((reference) => (
+              <li key={reference.fieldId}>{describeReference(reference)}</li>
+            ))}
+          </ul>
+          <p>Deleting it also removes those rules and references.</p>
+        </ConfirmDialog>
+      )}
+      {pendingChange?.kind === 'removeOptions' && (
+        <ConfirmDialog
+          title={`Remove ${pluralize(pendingChange.removedLabels.length, 'option')}?`}
+          confirmLabel="Remove and update rules"
+          tone="danger"
+          onConfirm={handleConfirmPendingChange}
+          onCancel={() => setPendingChange(null)}
+        >
+          <p>
+            {describeOptionImpact(
+              pendingChange.removedLabels,
+              pendingChange.affectedLabels,
+            )}
+          </p>
+        </ConfirmDialog>
       )}
       {blocker.state === 'blocked' && (
         <ConfirmDialog

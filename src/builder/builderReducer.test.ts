@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { createField } from '../fields/logicRegistry'
 import type { BuilderAction, BuilderState } from './builderReducer'
+import { ruleField, whenText } from '../test/ruleFixtures'
 import { builderReducer, finalIndexForDrop } from './builderReducer'
 
 function stateWith(
@@ -150,5 +151,53 @@ describe('deleteField', () => {
   test('deleting a field that is not selected keeps the selection', () => {
     const next = reduce(stateWith(['a', 'b'], 'a'), { type: 'deleteField', fieldId: 'b' })
     expect(next.selectedFieldId).toBe('a')
+  })
+})
+
+describe('cascades (spec edge cases)', () => {
+  test('deleting a field also removes rules that target it, in one action', () => {
+    const state: BuilderState = {
+      title: 'Form',
+      fields: [ruleField('a'), ruleField('b', { hideWhen: [whenText('a', 'x')] })],
+      selectedFieldId: 'a',
+    }
+    const next = reduce(state, { type: 'deleteField', fieldId: 'a' })
+    expect(ids(next)).toEqual(['b'])
+    expect(next.fields[0].visibility.conditions).toEqual([])
+  })
+
+  test('removing an option used by a single select rule removes that rule', () => {
+    const colour = createField('singleSelect', 'colour')
+    if (colour.type !== 'singleSelect') {
+      throw new Error('expected a single select')
+    }
+    const withOptions = {
+      ...colour,
+      config: {
+        ...colour.config,
+        options: [
+          { id: 'red', label: 'Red' },
+          { id: 'blue', label: 'Blue' },
+        ],
+      },
+    }
+    const rule = {
+      id: 'r',
+      targetId: 'colour',
+      kind: 'singleSelect',
+      operator: 'equals',
+      value: 'red',
+    } as const
+    const state: BuilderState = {
+      title: 'Form',
+      fields: [withOptions, ruleField('x', { hideWhen: [rule] })],
+      selectedFieldId: 'colour',
+    }
+    const withoutRed = {
+      ...withOptions,
+      config: { ...withOptions.config, options: [{ id: 'blue', label: 'Blue' }] },
+    }
+    const next = reduce(state, { type: 'updateField', field: withoutRed })
+    expect(next.fields[1].visibility.conditions).toEqual([])
   })
 })

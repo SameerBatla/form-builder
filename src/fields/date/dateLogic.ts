@@ -8,6 +8,7 @@ export const dateDefinition: FieldDefinition<'date'> = {
   type: 'date',
   displayName: 'Date',
   capturesValue: true,
+  conditionKinds: ['date'],
   createField: (id) => {
     return {
       id,

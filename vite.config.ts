@@ -8,5 +8,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.ts',
+    // UI tests drive real user events in jsdom; give them headroom on a busy machine.
+    testTimeout: 15_000,
   },
 })

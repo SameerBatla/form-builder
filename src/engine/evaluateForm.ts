@@ -1,3 +1,4 @@
+import type { Condition } from '../fields/conditionSchema'
 import type { FieldId } from '../fields/fieldBase'
 import type { Field, FieldValue } from '../fields/fieldUnion'
 import { getRequiredRules } from '../fields/fieldUnion'
@@ -8,6 +9,9 @@ import {
   isValueEmpty,
   normalizeValue,
 } from '../fields/logicRegistry'
+import type { TargetState } from './conditions'
+import { isConditionMet, matchesRuleGroup } from './conditions'
+import { orderByDependencies } from './dependencies'
 
 export type FormValues = Record<FieldId, FieldValue>
 
@@ -15,7 +19,7 @@ export interface FieldEvaluation {
   isVisible: boolean
   /** Always false while hidden: a hidden field is never required. */
   isRequired: boolean
-  /** What downstream logic and the submission see (hidden → the field's empty value). */
+  /** The value as used downstream (normalized). Consumers must check isVisible first. */
   value: FieldValue
   error: string | null
 }
@@ -28,24 +32,54 @@ export interface FormEvaluation {
 
 /*
  * Everything derived from the typed values, computed on each render and never
- * stored. Today it applies each field's default visibility/required state;
- * conditional rules plug in here later without changing the callers.
+ * stored. Fields are evaluated in dependency order, so when a field's rules
+ * run, every field they look at already has its final visibility and value.
+ * A hidden target counts as "no value", which is what makes chains collapse:
+ * A hides B → B counts as empty → C (shown by B) falls back to its default.
  */
 export function evaluateForm(
   fields: Field[],
   rawValues: FormValues,
   today: string,
 ): FormEvaluation {
+  const fieldsById = new Map(fields.map((field) => [field.id, field]))
   const evaluated: Record<FieldId, FieldEvaluation> = {}
-  let errorCount = 0
-  let firstErrorFieldId: FieldId | null = null
 
-  for (const field of fields) {
+  const getTargetState = (targetId: FieldId): TargetState | null => {
+    const target = fieldsById.get(targetId)
+    const targetEvaluation = evaluated[targetId]
+    // Missing (deleted) or not evaluated yet (only inside a loop) → no value.
+    if (!target || !targetEvaluation) {
+      return null
+    }
+    return {
+      isVisible: targetEvaluation.isVisible,
+      isEmpty: isValueEmpty(target, targetEvaluation.value),
+      value: targetEvaluation.value,
+    }
+  }
+  const isMet = (condition: Condition) =>
+    isConditionMet(condition, getTargetState(condition.targetId))
+
+  for (const field of orderByDependencies(fields)) {
+    // Each rule group flips its default when it matches.
+    const isVisibleByDefault = field.visibility.defaultState === 'visible'
+    const isVisible = matchesRuleGroup(field.visibility, isMet)
+      ? !isVisibleByDefault
+      : isVisibleByDefault
+
+    let isRequired = false
+    const requiredRules = getRequiredRules(field)
+    if (isVisible && requiredRules) {
+      const isRequiredByDefault = requiredRules.defaultState === 'required'
+      isRequired = matchesRuleGroup(requiredRules, isMet)
+        ? !isRequiredByDefault
+        : isRequiredByDefault
+    }
+
     const initialValue = getInitialValue(field, today)
     // `in`, not `??`: a deliberately cleared value (null) must stay cleared.
     const rawValue = field.id in rawValues ? rawValues[field.id] : initialValue
-    const isVisible = field.visibility.defaultState === 'visible'
-    const isRequired = isVisible && getRequiredRules(field)?.defaultState === 'required'
     const value = isVisible ? normalizeValue(field, rawValue) : initialValue
 
     let error: string | null = null
@@ -56,13 +90,18 @@ export function evaluateForm(
         error = getValueError(field, value)
       }
     }
-    if (error !== null) {
-      errorCount += 1
-      firstErrorFieldId ??= field.id
-    }
     evaluated[field.id] = { isVisible, isRequired, value, error }
   }
 
+  // Counted in form order so "first error" is the first one on screen.
+  let errorCount = 0
+  let firstErrorFieldId: FieldId | null = null
+  for (const field of fields) {
+    if (evaluated[field.id].error !== null) {
+      errorCount += 1
+      firstErrorFieldId ??= field.id
+    }
+  }
   return { fields: evaluated, errorCount, firstErrorFieldId }
 }
 

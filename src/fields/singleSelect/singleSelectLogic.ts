@@ -6,6 +6,8 @@ export const singleSelectDefinition: FieldDefinition<'singleSelect'> = {
   type: 'singleSelect',
   displayName: 'Single select',
   capturesValue: true,
+  conditionKinds: ['singleSelect'],
+  getOptions: (field) => field.config.options,
   createField: (id) => {
     return {
       id,

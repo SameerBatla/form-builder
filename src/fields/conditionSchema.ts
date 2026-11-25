@@ -5,6 +5,9 @@ import { z } from 'zod'
  * `kind` is the operator family, decided by the target's field type when the
  * condition is created. Each kind has its own operators and value shape, so an
  * impossible pair (e.g. 'contains' with a number) can't be represented.
+ *
+ * Number and date values may be null while the builder is still typing them;
+ * Save is blocked until every condition is complete.
  */
 
 const conditionBase = z.object({
@@ -21,14 +24,14 @@ export const textConditionSchema = conditionBase.extend({
 export const numberConditionSchema = conditionBase.extend({
   kind: z.literal('number'),
   operator: z.enum(['equals', 'greaterThan', 'lessThan']),
-  value: z.number(),
+  value: z.number().nullable(),
 })
 
 // Separate kind because its value is a range, not a single number.
 export const numberRangeConditionSchema = conditionBase.extend({
   kind: z.literal('numberRange'),
   operator: z.literal('withinRange'),
-  value: z.object({ min: z.number(), max: z.number() }),
+  value: z.object({ min: z.number().nullable(), max: z.number().nullable() }),
 })
 
 export const singleSelectConditionSchema = conditionBase.extend({
@@ -46,7 +49,7 @@ export const multiSelectConditionSchema = conditionBase.extend({
 export const dateConditionSchema = conditionBase.extend({
   kind: z.literal('date'),
   operator: z.enum(['equals', 'before', 'after']),
-  value: z.iso.date(), // YYYY-MM-DD
+  value: z.iso.date().nullable(), // YYYY-MM-DD
 })
 
 export const conditionSchema = z.discriminatedUnion('kind', [

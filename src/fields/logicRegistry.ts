@@ -1,4 +1,5 @@
-import type { FieldId } from './fieldBase'
+import type { ConditionKind } from './conditionSchema'
+import type { FieldId, Option } from './fieldBase'
 import { validateFieldBase } from './fieldBase'
 import type { Field, FieldType, FieldValue } from './fieldUnion'
 import type { FieldDefinition } from './logicTypes'
@@ -23,6 +24,7 @@ export const fieldDefinitions: { [T in FieldType]: FieldDefinition<T> } = {
   sectionHeader: sectionHeaderDefinition,
 }
 
+// Object.keys is always typed string[]; the mapped type above guarantees these are FieldTypes.
 export const fieldTypes = Object.keys(fieldDefinitions) as FieldType[]
 
 /** For untrusted strings (e.g. drag data). */
@@ -67,6 +69,23 @@ export function isValueEmpty(field: Field, value: FieldValue): boolean {
 export function normalizeValue(field: Field, value: FieldValue): FieldValue {
   const definition = getFieldDefinition(field.type)
   return definition.normalizeValue ? definition.normalizeValue(field, value) : value
+}
+
+/** Empty when the field can't be a rule target (Section Header, File Upload, Calculation). */
+export function getConditionKinds(field: Field): ConditionKind[] {
+  return getFieldDefinition(field.type).conditionKinds ?? []
+}
+
+export function getFieldOptions(field: Field): Option[] {
+  return getFieldDefinition(field.type).getOptions?.(field) ?? []
+}
+
+export function getReferencedFieldIds(field: Field): FieldId[] {
+  return getFieldDefinition(field.type).referencedFieldIds?.(field) ?? []
+}
+
+export function removeConfigReference(field: Field, removedId: FieldId): Field {
+  return getFieldDefinition(field.type).removeFieldReference?.(field, removedId) ?? field
 }
 
 export function capturesValue(field: Field): boolean {

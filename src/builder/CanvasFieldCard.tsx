@@ -7,7 +7,14 @@ import { getFieldDefinition, getInitialValue } from '../fields/logicRegistry'
 import { fieldUis } from '../fields/uiRegistry'
 import Badge from '../ui/Badge/Badge'
 import { Button } from '../ui/Button/Button'
-import { ArrowDownIcon, ArrowUpIcon, GripIcon, TrashIcon } from '../ui/icons/icons'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  BranchIcon,
+  EyeOffIcon,
+  GripIcon,
+  TrashIcon,
+} from '../ui/icons/icons'
 import styles from './CanvasFieldCard.module.css'
 import { DRAG_FIELD_ID } from './dragData'
 
@@ -55,7 +62,10 @@ export default function CanvasFieldCard({
   const { icon: Icon } = fieldUis[field.type]
   const typeName = getFieldDefinition(field.type).displayName
   const label = field.label.trim() || 'Untitled field'
-  const isRequiredByDefault = getRequiredRules(field)?.defaultState === 'required'
+  const requiredRules = getRequiredRules(field)
+  const isRequiredByDefault = requiredRules?.defaultState === 'required'
+  const hasRules =
+    field.visibility.conditions.length > 0 || (requiredRules?.conditions.length ?? 0) > 0
 
   const handleGripDragStart = (event: DragEvent<HTMLSpanElement>) => {
     event.dataTransfer.setData(DRAG_FIELD_ID, field.id)
@@ -110,6 +120,18 @@ export default function CanvasFieldCard({
           {typeName}
         </Badge>
         {isRequiredByDefault && <Badge tone="danger">Required</Badge>}
+        {field.visibility.defaultState === 'hidden' && (
+          <Badge>
+            <EyeOffIcon size={12} />
+            Hidden by default
+          </Badge>
+        )}
+        {hasRules && (
+          <Badge>
+            <BranchIcon size={12} />
+            Logic
+          </Badge>
+        )}
         {hasIssues && (
           <span className={styles.issueDot} title="Needs attention" aria-hidden="true" />
         )}

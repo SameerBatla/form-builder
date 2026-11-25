@@ -13,6 +13,7 @@ export const multiLineTextDefinition: FieldDefinition<'multiLineText'> = {
   type: 'multiLineText',
   displayName: 'Multi-line text',
   capturesValue: true,
+  conditionKinds: ['text'],
   createField: (id) => {
     return {
       id,

@@ -7,6 +7,7 @@ export const numberDefinition: FieldDefinition<'number'> = {
   type: 'number',
   displayName: 'Number',
   capturesValue: true,
+  conditionKinds: ['number', 'numberRange'],
   createField: (id) => {
     return {
       id,

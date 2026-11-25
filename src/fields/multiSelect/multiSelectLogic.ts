@@ -8,6 +8,8 @@ export const multiSelectDefinition: FieldDefinition<'multiSelect'> = {
   type: 'multiSelect',
   displayName: 'Multi select',
   capturesValue: true,
+  conditionKinds: ['multiSelect'],
+  getOptions: (field) => field.config.options,
   createField: (id) => {
     return {
       id,

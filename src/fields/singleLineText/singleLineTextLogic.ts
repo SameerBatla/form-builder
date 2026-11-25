@@ -10,6 +10,7 @@ export const singleLineTextDefinition: FieldDefinition<'singleLineText'> = {
   type: 'singleLineText',
   displayName: 'Single line text',
   capturesValue: true,
+  conditionKinds: ['text'],
   createField: (id) => {
     return {
       id,

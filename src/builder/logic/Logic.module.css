@@ -1,0 +1,83 @@
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.group + .group {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.sentence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.sentence select {
+  width: auto;
+  min-width: 96px;
+  height: var(--control-height-sm);
+}
+
+.conditions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.condition {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.conditionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.range {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.optionChecks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.optionCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.optionCheck input {
+  accent-color: var(--color-text);
+}
+
+.hint {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+}

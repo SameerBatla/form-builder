@@ -5,6 +5,7 @@ import { createField } from '../fields/logicRegistry'
 import { loadResponsesForTemplate } from '../storage/responseStore'
 import { loadTemplate, loadTemplates, saveTemplate } from '../storage/templateStore'
 import { buildTemplate } from '../test/fixtures'
+import { whenText } from '../test/ruleFixtures'
 import { renderRoute } from '../test/renderRoute'
 
 beforeEach(() => {
@@ -234,4 +235,160 @@ describe('preview', () => {
     expect(screen.queryByRole('dialog', { name: 'Form preview' })).not.toBeInTheDocument()
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
   })
+})
+
+describe('rule editor', () => {
+  function seedTwoFields() {
+    const fields = [
+      { ...createField('singleLineText', 'hasCar'), label: 'Has car' },
+      { ...createField('singleLineText', 'plate'), label: 'Plate' },
+    ]
+    saveTemplate(buildTemplate('t1', { fields }))
+    renderRoute('/templates/t1/edit')
+  }
+
+  test('build "show Plate when Has car equals yes", then see it work in Preview', async () => {
+    const user = userEvent.setup()
+    seedTwoFields()
+
+    await user.click(within(canvas()).getByRole('button', { name: /^Plate,/ }))
+    await user.click(screen.getByRole('tab', { name: 'Logic' }))
+    const visibility = screen.getByRole('region', { name: 'Visibility' })
+    await user.selectOptions(within(visibility).getByLabelText('This field is'), 'Hidden')
+    await user.click(within(visibility).getByRole('button', { name: 'Add condition' }))
+
+    expect(within(visibility).getByLabelText('Field to check')).toHaveDisplayValue(
+      'Has car',
+    )
+    expect(within(visibility).getByText('Show it when')).toBeInTheDocument()
+    await user.type(within(visibility).getByRole('textbox', { name: 'Value' }), 'yes')
+    expect(within(canvas()).getByText('Logic')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Preview' }))
+    const preview = screen.getByRole('dialog', { name: 'Form preview' })
+    expect(
+      within(preview).queryByRole('textbox', { name: 'Plate' }),
+    ).not.toBeInTheDocument()
+    await user.type(within(preview).getByRole('textbox', { name: 'Has car' }), 'Yes')
+    expect(within(preview).getByRole('textbox', { name: 'Plate' })).toBeInTheDocument()
+  })
+
+  test('a field is never offered as its own rule target', async () => {
+    const user = userEvent.setup()
+    seedTwoFields()
+    await user.click(within(canvas()).getByRole('button', { name: /^Plate,/ }))
+    await user.click(screen.getByRole('tab', { name: 'Logic' }))
+    const visibility = screen.getByRole('region', { name: 'Visibility' })
+    await user.click(within(visibility).getByRole('button', { name: 'Add condition' }))
+
+    const targetOptions = within(within(visibility).getByLabelText('Field to check'))
+      .getAllByRole('option')
+      .map((option) => option.textContent)
+    expect(targetOptions).toEqual(['Has car'])
+  })
+
+  test('an incomplete rule blocks Save', async () => {
+    const user = userEvent.setup()
+    seedTwoFields()
+    await user.click(within(canvas()).getByRole('button', { name: /^Plate,/ }))
+    await user.click(screen.getByRole('tab', { name: 'Logic' }))
+    const visibility = screen.getByRole('region', { name: 'Visibility' })
+    await user.click(within(visibility).getByRole('button', { name: 'Add condition' }))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(screen.getAllByRole('alert')[0]).toHaveTextContent(
+      'A rule on “Has car” needs a value to compare with.',
+    )
+  })
+})
+
+describe('cascades with confirmation', () => {
+  function seedRule() {
+    const hasCar = { ...createField('singleLineText', 'hasCar'), label: 'Has car' }
+    const plate = createField('singleLineText', 'plate')
+    if (plate.type !== 'singleLineText') {
+      throw new Error('expected text')
+    }
+    const plateWithRule = {
+      ...plate,
+      label: 'Plate',
+      visibility: {
+        defaultState: 'hidden' as const,
+        match: 'all' as const,
+        conditions: [whenText('hasCar', 'yes')],
+      },
+    }
+    saveTemplate(buildTemplate('t1', { fields: [hasCar, plateWithRule] }))
+    renderRoute('/templates/t1/edit')
+  }
+
+  test('deleting a field used by a rule asks first; Cancel keeps it', async () => {
+    const user = userEvent.setup()
+    seedRule()
+    await user.click(screen.getByRole('button', { name: 'Delete Has car' }))
+
+    const dialog = screen.getByRole('alertdialog')
+    expect(dialog).toHaveTextContent('Delete “Has car”?')
+    expect(dialog).toHaveTextContent('1 rule in “Plate”')
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    expect(within(canvas()).getAllByRole('listitem')).toHaveLength(2)
+  })
+
+  test('confirming deletes the field and the rule that used it', async () => {
+    const user = userEvent.setup()
+    seedRule()
+    await user.click(screen.getByRole('button', { name: 'Delete Has car' }))
+    await user.click(screen.getByRole('button', { name: 'Delete field and rules' }))
+
+    expect(within(canvas()).getAllByRole('listitem')).toHaveLength(1)
+    expect(within(canvas()).queryByText('Logic')).not.toBeInTheDocument()
+  })
+})
+
+test('removing a select option used by a rule asks first, then removes the rule', async () => {
+  const user = userEvent.setup()
+  const colour = createField('singleSelect', 'colour')
+  if (colour.type !== 'singleSelect') {
+    throw new Error('expected a single select')
+  }
+  const colourField = {
+    ...colour,
+    label: 'Colour',
+    config: {
+      ...colour.config,
+      options: [
+        { id: 'red', label: 'Red' },
+        { id: 'blue', label: 'Blue' },
+      ],
+    },
+  }
+  const note = {
+    ...createField('singleLineText', 'note'),
+    label: 'Note',
+    visibility: {
+      defaultState: 'hidden' as const,
+      match: 'all' as const,
+      conditions: [
+        {
+          id: 'c',
+          targetId: 'colour',
+          kind: 'singleSelect' as const,
+          operator: 'equals' as const,
+          value: 'red',
+        },
+      ],
+    },
+  }
+  saveTemplate(buildTemplate('t1', { fields: [colourField, note] }))
+  renderRoute('/templates/t1/edit')
+
+  await user.click(screen.getByRole('button', { name: 'Remove Red' }))
+  expect(screen.getByRole('alertdialog')).toHaveTextContent(
+    '“Red” is used in rules on “Note”. Removing it also updates or removes those rules.',
+  )
+  await user.click(screen.getByRole('button', { name: 'Remove and update rules' }))
+
+  expect(screen.queryByRole('textbox', { name: 'Option 2' })).not.toBeInTheDocument()
+  expect(within(canvas()).queryByText('Logic')).not.toBeInTheDocument()
 })

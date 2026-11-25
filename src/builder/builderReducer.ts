@@ -1,11 +1,12 @@
 import type { FieldId } from '../fields/fieldBase'
 import type { Field, FieldType } from '../fields/fieldUnion'
 import { createField } from '../fields/logicRegistry'
+import { pruneOptionConditions, removeFieldReferences } from '../engine/references'
 
 /*
- * A reducer (not several useStates) because most actions change the field list
- * and the selection together, e.g. deleting the selected field also moves the
- * selection. Ids are created by the caller so the reducer stays pure.
+ * A reducer (not several useStates) because most actions change several things
+ * at once: deleting the selected field also moves the selection and removes the
+ * rules that pointed at it. Ids are created by the caller so the reducer stays pure.
  */
 
 export interface BuilderState {
@@ -54,7 +55,12 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       if (index === -1) {
         return state
       }
-      return { ...state, fields: state.fields.with(index, action.field) }
+      // Rules on this field that used a now-removed option are fixed or dropped too.
+      const fields = pruneOptionConditions(
+        state.fields.with(index, action.field),
+        action.field,
+      )
+      return { ...state, fields }
     }
 
     case 'moveField': {
@@ -75,7 +81,11 @@ export function builderReducer(state: BuilderState, action: BuilderAction): Buil
       if (index === -1) {
         return state
       }
-      const fields = state.fields.toSpliced(index, 1)
+      // Rules and calculation sources pointing at the deleted field go with it.
+      const fields = removeFieldReferences(
+        state.fields.toSpliced(index, 1),
+        action.fieldId,
+      )
       let selectedFieldId = state.selectedFieldId
       if (selectedFieldId === action.fieldId) {
         // Keep the user's place: select the field that slid into this spot, else the one above.

@@ -9,6 +9,7 @@ import Tabs from '../ui/Tabs/Tabs'
 import TextInput from '../ui/TextInput/TextInput'
 import Toggle from '../ui/Toggle/Toggle'
 import styles from './ConfigPanel.module.css'
+import LogicTab from './logic/LogicTab'
 
 type ConfigTab = 'settings' | 'logic'
 
@@ -19,12 +20,19 @@ const configTabs: { id: ConfigTab; label: string }[] = [
 
 interface ConfigPanelProps {
   field: Field | null
+  /** All fields in the form, for picking rule targets. */
+  fields: Field[]
   /** Shown at the top; empty until the user tries to save. */
   issues: string[]
   onChange: (field: Field) => void
 }
 
-export default function ConfigPanel({ field, issues, onChange }: ConfigPanelProps) {
+export default function ConfigPanel({
+  field,
+  fields,
+  issues,
+  onChange,
+}: ConfigPanelProps) {
   const [activeTab, setActiveTab] = useState<ConfigTab>('settings')
 
   if (!field) {
@@ -60,6 +68,14 @@ export default function ConfigPanel({ field, issues, onChange }: ConfigPanelProp
         <h2 className={styles.title}>{getFieldDefinition(field.type).displayName}</h2>
       </header>
 
+      {issues.length > 0 && (
+        <ul className={styles.issues} role="alert">
+          {issues.map((issue) => (
+            <li key={issue}>{issue}</li>
+          ))}
+        </ul>
+      )}
+
       <Tabs
         tabs={configTabs}
         activeTabId={activeTab}
@@ -75,13 +91,6 @@ export default function ConfigPanel({ field, issues, onChange }: ConfigPanelProp
       >
         {activeTab === 'settings' ? (
           <>
-            {issues.length > 0 && (
-              <ul className={styles.issues} role="alert">
-                {issues.map((issue) => (
-                  <li key={issue}>{issue}</li>
-                ))}
-              </ul>
-            )}
             <FormControl label="Label" htmlFor={labelInputId}>
               <TextInput
                 id={labelInputId}
@@ -99,7 +108,7 @@ export default function ConfigPanel({ field, issues, onChange }: ConfigPanelProp
             <FieldConfigPanel field={field} onChange={onChange} />
           </>
         ) : (
-          <p className="muted">Show/hide and required rules arrive in a later step.</p>
+          <LogicTab field={field} fields={fields} onChange={onChange} />
         )}
       </div>
     </div>

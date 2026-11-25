@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import type { SingleLineTextField } from '../fields/singleLineText/singleLineTextSchema'
 import { createField } from '../fields/logicRegistry'
+import { ruleField, whenText } from '../test/ruleFixtures'
 import { countIssues, validateTemplate } from './validateTemplate'
 
 function textField(
@@ -67,5 +68,24 @@ describe('validateTemplate: field level', () => {
       ],
     })
     expect(countIssues(issues)).toBe(3)
+  })
+})
+
+describe('validateTemplate: rules', () => {
+  test('an incomplete condition blocks Save on the field that owns it', () => {
+    const fields = [ruleField('a'), ruleField('b', { showWhen: [whenText('a', '')] })]
+    expect(validateTemplate({ title: 'T', fields }).fieldIssues).toEqual({
+      b: ['A rule on “a” needs a value to compare with.'],
+    })
+  })
+
+  test('a loop in the rules is a form-level issue', () => {
+    const fields = [
+      ruleField('a', { hideWhen: [whenText('b', '1')] }),
+      ruleField('b', { hideWhen: [whenText('a', '1')] }),
+    ]
+    expect(validateTemplate({ title: 'T', fields }).formIssues).toEqual([
+      'These fields’ rules depend on each other in a loop: a, b.',
+    ])
   })
 })
