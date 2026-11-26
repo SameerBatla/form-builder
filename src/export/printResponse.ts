@@ -1,5 +1,4 @@
 import { createElement } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 import { toLocalIsoDate } from '../lib/dates'
 import type { FormResponse } from '../storage/schema'
 import { buildExportModel } from './buildExportModel'
@@ -9,8 +8,12 @@ import { exportDocumentCss, printPageCss } from './exportStyles'
 
 const PRINT_FRAME_ID = 'form-builder-print-frame'
 
-/** A complete HTML page for the print iframe. React escapes every value. */
-export function buildPrintHtml(model: ExportModel): string {
+/**
+ * A complete HTML page for the print iframe. React escapes every value.
+ * The static renderer is loaded on demand: it's large and only needed when printing.
+ */
+export async function buildPrintHtml(model: ExportModel): Promise<string> {
+  const { renderToStaticMarkup } = await import('react-dom/server')
   const body = renderToStaticMarkup(createElement(ExportDocument, { model }))
   // The title becomes the suggested PDF file name in most browsers.
   const fileTitle = `${model.title} – ${toLocalIsoDate(new Date(model.submittedAt))}`
@@ -60,6 +63,6 @@ export function printHtml(html: string) {
   document.body.appendChild(iframe)
 }
 
-export function printResponse(response: FormResponse) {
-  printHtml(buildPrintHtml(buildExportModel(response)))
+export async function printResponse(response: FormResponse) {
+  printHtml(await buildPrintHtml(buildExportModel(response)))
 }

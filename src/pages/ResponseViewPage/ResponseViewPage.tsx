@@ -26,7 +26,7 @@ export default function ResponseViewPage() {
           <ChevronLeftIcon />
           All responses
         </Link>
-        <Button variant="primary" onClick={() => printResponse(response)}>
+        <Button variant="primary" onClick={() => void printResponse(response)}>
           <DownloadIcon />
           Download PDF
         </Button>

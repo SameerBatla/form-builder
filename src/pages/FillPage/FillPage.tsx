@@ -31,7 +31,7 @@ export default function FillPage() {
     saveResponse(response)
     if (options.downloadPdf) {
       // Printed from the saved response, so the PDF has the real timestamp.
-      printResponse(response)
+      void printResponse(response)
     }
     navigate(`/templates/${template.id}/responses?highlight=${responseId}`)
   }

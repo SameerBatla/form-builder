@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { beforeAll, describe, expect, test } from 'vitest'
 import type { ExportModel } from './buildExportModel'
 import { buildPrintHtml } from './printResponse'
 
@@ -21,7 +21,10 @@ const model: ExportModel = {
 }
 
 describe('buildPrintHtml', () => {
-  const html = buildPrintHtml(model)
+  let html = ''
+  beforeAll(async () => {
+    html = await buildPrintHtml(model)
+  })
 
   test('is a full HTML page with the export and print styles inlined', () => {
     expect(html).toMatch(/^<!doctype html>/)

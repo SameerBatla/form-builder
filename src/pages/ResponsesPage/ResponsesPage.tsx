@@ -101,7 +101,7 @@ export default function ResponsesPage() {
                   <LinkButton to={viewPath} size="small">
                     View
                   </LinkButton>
-                  <Button size="small" onClick={() => printResponse(response)}>
+                  <Button size="small" onClick={() => void printResponse(response)}>
                     <DownloadIcon />
                     Re-download PDF
                   </Button>
