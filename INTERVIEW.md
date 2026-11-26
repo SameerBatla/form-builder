@@ -1,6 +1,6 @@
 # Spec Interview: Questions & Answers
 
-Questions asked while turning `TASK.md` into `SPEC.md`. Each one notes the option picked (✅) and the alternatives considered.
+Questions asked while turning the assignment brief into `SPEC.md`. Each one notes the option picked (✅) and the alternatives considered.
 
 ## Round 1: Conditional logic semantics
 

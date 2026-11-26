@@ -26,3 +26,7 @@ dist-ssr
 # Local archive of the project, not source
 form-builder.zip
 DESIGN.md
+
+# Local working notes, not part of the submission
+TASK.md
+CLAUDE.md

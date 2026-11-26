@@ -1,7 +1,7 @@
 # Plan
 **Mode:** Build. No pauses between steps; stop at the end of each phase. Walk the user through every step afterwards.
 **Goal:** Build a form template, fill it with live conditions and calculations, submit it, and export it as a PDF, all in localStorage.
-**Spec:** `SPEC.md` (resolved from `TASK.md`; the Q&A is in `INTERVIEW.md`).
+**Spec:** `SPEC.md` (resolved from the assignment brief; the Q&A is in `INTERVIEW.md`).
 
 ## Architecture
 - Look: design tokens in `index.css`, hand-written SVG icons in `ui/icons` · Keychain-inspired, no icon library

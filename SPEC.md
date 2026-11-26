@@ -1,6 +1,6 @@
 # Form Builder: Final Specification
 
-The source requirements are in `TASK.md`, which stays unchanged. This file resolves every ambiguity found in the spec interview (`INTERVIEW.md`, Q1–Q48). Where this file is more specific than `TASK.md`, this file wins. Everything under **Decisions** goes into the README.
+The source requirements are the assignment brief. This file resolves every ambiguity found in the spec interview (`INTERVIEW.md`, Q1–Q48). Where this file is more specific than the brief, this file wins. Everything under **Decisions** goes into the README.
 
 ---
 
