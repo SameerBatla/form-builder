@@ -1,10 +1,12 @@
+import { singleSelectValueSchema } from './singleSelectSchema'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
-import { createOption, validateOptions } from '../shared/options'
+import { createOption, findOptionLabel, validateOptions } from '../shared/options'
 
 export const singleSelectDefinition: FieldDefinition<'singleSelect'> = {
   type: 'singleSelect',
   displayName: 'Single select',
+  valueSchema: singleSelectValueSchema,
   capturesValue: true,
   conditionKinds: ['singleSelect'],
   getOptions: (field) => field.config.options,
@@ -23,6 +25,10 @@ export const singleSelectDefinition: FieldDefinition<'singleSelect'> = {
   },
   initialValue: () => null,
   validateConfig: (field) => validateOptions(field.config.options),
+  formatForExport: (field, value) => ({
+    kind: 'answer',
+    lines: [findOptionLabel(field.config.options, value ?? '') ?? 'Removed option'],
+  }),
   isEmpty: (value) => value === null,
   validateValue: (field, value) => {
     const isKnownOption = field.config.options.some((option) => option.id === value)

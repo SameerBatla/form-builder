@@ -1,3 +1,4 @@
+import { multiLineTextValueSchema } from './multiLineTextSchema'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 import {
@@ -12,6 +13,7 @@ const MAX_ROWS = 20
 export const multiLineTextDefinition: FieldDefinition<'multiLineText'> = {
   type: 'multiLineText',
   displayName: 'Multi-line text',
+  valueSchema: multiLineTextValueSchema,
   capturesValue: true,
   conditionKinds: ['text'],
   createField: (id) => {
@@ -33,6 +35,7 @@ export const multiLineTextDefinition: FieldDefinition<'multiLineText'> = {
     }
     return issues
   },
+  formatForExport: (_field, value) => ({ kind: 'answer', lines: value.split('\n') }),
   isEmpty: isTextEmpty,
   validateValue: (field, value) =>
     validateTextLength(value, field.config.minLength, field.config.maxLength),

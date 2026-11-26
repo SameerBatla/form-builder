@@ -52,7 +52,7 @@ describe.each(displays)('single select shown as %s', (display) => {
 
     await choose(display, 'Pro')
     await user.click(screen.getByRole('button', { name: 'Submit' }))
-    expect(onSubmit).toHaveBeenCalledWith({
+    expect(onSubmit.mock.lastCall?.[0]).toEqual({
       visibleFieldIds: ['plan'],
       values: { plan: 'pro' },
     })
@@ -77,7 +77,7 @@ describe.each(displays)('single select shown as %s', (display) => {
       await user.click(screen.getByRole('button', { name: 'Clear selection' }))
     }
     await user.click(screen.getByRole('button', { name: 'Submit' }))
-    expect(onSubmit).toHaveBeenCalledWith({
+    expect(onSubmit.mock.lastCall?.[0]).toEqual({
       visibleFieldIds: ['plan'],
       values: { plan: null },
     })

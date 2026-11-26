@@ -1,9 +1,11 @@
+import { sectionHeaderValueSchema } from './sectionHeaderSchema'
 import { createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 
 export const sectionHeaderDefinition: FieldDefinition<'sectionHeader'> = {
   type: 'sectionHeader',
   displayName: 'Section header',
+  valueSchema: sectionHeaderValueSchema,
   capturesValue: false,
   createField: (id) => {
     return {
@@ -17,6 +19,7 @@ export const sectionHeaderDefinition: FieldDefinition<'sectionHeader'> = {
   initialValue: () => null,
   validateConfig: () => [],
   // Nothing to answer, so "empty" never triggers anything (it is never required).
+  formatForExport: (field) => ({ kind: 'heading', size: field.config.size }),
   isEmpty: () => true,
   validateValue: () => null,
 }

@@ -1,4 +1,5 @@
-import { pluralize } from '../../lib/format'
+import { fileUploadValueSchema } from './fileUploadSchema'
+import { formatFileSize, pluralize } from '../../lib/format'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 import type { FileMeta, FileUploadConfig } from './fileUploadSchema'
@@ -9,6 +10,7 @@ const MIME_PATTERN = /^[a-z]+\/([a-z0-9.+-]+|\*)$/
 export const fileUploadDefinition: FieldDefinition<'fileUpload'> = {
   type: 'fileUpload',
   displayName: 'File upload',
+  valueSchema: fileUploadValueSchema,
   capturesValue: true,
   createField: (id) => {
     return {
@@ -36,6 +38,11 @@ export const fileUploadDefinition: FieldDefinition<'fileUpload'> = {
     }
     return issues
   },
+  formatForExport: (_field, value) => ({
+    kind: 'answer',
+    lines: value.map((file) => `${file.name} (${formatFileSize(file.size)})`),
+    note: 'File contents are not embedded in this export.',
+  }),
   isEmpty: (value) => value.length === 0,
   validateValue: (field, value) => {
     const { allowedTypes, maxFiles } = field.config

@@ -1,3 +1,4 @@
+import { singleLineTextValueSchema } from './singleLineTextSchema'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 import {
@@ -9,6 +10,7 @@ import {
 export const singleLineTextDefinition: FieldDefinition<'singleLineText'> = {
   type: 'singleLineText',
   displayName: 'Single line text',
+  valueSchema: singleLineTextValueSchema,
   capturesValue: true,
   conditionKinds: ['text'],
   createField: (id) => {
@@ -30,6 +32,10 @@ export const singleLineTextDefinition: FieldDefinition<'singleLineText'> = {
   initialValue: () => '',
   validateConfig: (field) =>
     validateLengthLimits(field.config.minLength, field.config.maxLength),
+  formatForExport: (field, value) => ({
+    kind: 'answer',
+    lines: [`${field.config.prefix}${value}${field.config.suffix}`],
+  }),
   isEmpty: isTextEmpty,
   validateValue: (field, value) =>
     validateTextLength(value, field.config.minLength, field.config.maxLength),

@@ -32,7 +32,7 @@ test('spec: submitting with a hidden required field succeeds and leaves it out',
   const onSubmit = renderForm()
   await user.type(screen.getByRole('textbox', { name: 'hasCar' }), 'no')
   await user.click(screen.getByRole('button', { name: 'Submit' }))
-  expect(onSubmit).toHaveBeenCalledWith({
+  expect(onSubmit.mock.lastCall?.[0]).toEqual({
     visibleFieldIds: ['hasCar'],
     values: { hasCar: 'no' },
   })

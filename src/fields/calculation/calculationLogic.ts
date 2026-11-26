@@ -1,4 +1,5 @@
-import { roundToDecimals } from '../../lib/numbers'
+import { calculationValueSchema } from './calculationSchema'
+import { formatNumber, roundToDecimals } from '../../lib/numbers'
 import { createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 import type { CalculationAggregation } from './calculationSchema'
@@ -6,6 +7,7 @@ import type { CalculationAggregation } from './calculationSchema'
 export const calculationDefinition: FieldDefinition<'calculation'> = {
   type: 'calculation',
   displayName: 'Calculation',
+  valueSchema: calculationValueSchema,
   capturesValue: true,
   createField: (id) => {
     return {
@@ -21,6 +23,10 @@ export const calculationDefinition: FieldDefinition<'calculation'> = {
     field.config.sourceFieldIds.length === 0
       ? ['Choose at least one Number field to calculate from.']
       : [],
+  formatForExport: (field, value) => ({
+    kind: 'answer',
+    lines: value === null ? [] : [formatNumber(value, field.config.decimalPlaces)],
+  }),
   isEmpty: (value) => value === null,
   validateValue: () => null,
   /*

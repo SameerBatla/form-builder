@@ -32,7 +32,7 @@ test('keeps allowed files as metadata and explains the rejected ones', async () 
   expect(screen.getByText('notes.docx: not an allowed file type')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Submit' }))
-  expect(onSubmit).toHaveBeenCalledWith({
+  expect(onSubmit.mock.lastCall?.[0]).toEqual({
     visibleFieldIds: ['docs'],
     values: { docs: [{ name: 'cv.pdf', size: 4, type: 'application/pdf' }] },
   })

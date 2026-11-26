@@ -13,6 +13,10 @@ export function loadResponsesForTemplate(templateId: string): FormResponse[] {
   )
 }
 
+export function loadResponse(id: string): FormResponse | null {
+  return loadResponses().responses.find((response) => response.id === id) ?? null
+}
+
 export function sortByNewest(responses: FormResponse[]): FormResponse[] {
   return responses.toSorted((first, second) =>
     second.submittedAt.localeCompare(first.submittedAt),

@@ -1,4 +1,5 @@
-import { roundToDecimals } from '../../lib/numbers'
+import { numberValueSchema } from './numberSchema'
+import { formatNumber, roundToDecimals } from '../../lib/numbers'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
 
@@ -7,6 +8,7 @@ const MAX_DECIMAL_PLACES = 4
 export const numberDefinition: FieldDefinition<'number'> = {
   type: 'number',
   displayName: 'Number',
+  valueSchema: numberValueSchema,
   capturesValue: true,
   conditionKinds: ['number', 'numberRange'],
   isCalculationSource: true,
@@ -37,6 +39,11 @@ export const numberDefinition: FieldDefinition<'number'> = {
       )
     }
     return issues
+  },
+  formatForExport: (field, value) => {
+    const { prefix, suffix, decimalPlaces } = field.config
+    const number = value === null ? '' : formatNumber(value, decimalPlaces)
+    return { kind: 'answer', lines: [`${prefix}${number}${suffix ? ` ${suffix}` : ''}`] }
   },
   isEmpty: (value) => value === null,
   validateValue: (field, value) => {

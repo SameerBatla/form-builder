@@ -43,10 +43,40 @@
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3) var(--space-4);
   min-height: 64px;
   padding: var(--space-3) var(--space-5);
+}
+
+.summary {
+  flex: 1;
+  min-width: 220px;
+}
+
+.viewLink {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.viewLink:hover {
+  text-decoration: underline;
+}
+
+.preview {
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .row + .row {
@@ -78,6 +108,7 @@
 }
 
 .newBadge {
+  margin-left: var(--space-2);
   padding: 2px var(--space-2);
   border-radius: var(--radius-pill);
   background: var(--color-accent);

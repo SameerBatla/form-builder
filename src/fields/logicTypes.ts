@@ -1,6 +1,13 @@
+import type { ZodType } from 'zod'
 import type { ConditionKind } from './conditionSchema'
 import type { FieldId, Option } from './fieldBase'
 import type { FieldOfType, FieldType, FieldValue, FieldValueOf } from './fieldUnion'
+
+/** How one field appears in the PDF / response view. */
+export type ExportContent =
+  | { kind: 'heading'; size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' }
+  /** `lines` is empty when there's no answer (shown as "—"). */
+  | { kind: 'answer'; lines: string[]; note?: string }
 
 /** What one field can see of another, after that other field was evaluated. */
 export interface ResolvedField {
@@ -19,6 +26,8 @@ export interface FieldDefinition<T extends FieldType> {
   displayName: string
   /** False for display-only fields (Section Header): nothing is stored for them. */
   capturesValue: boolean
+  /** Checks a stored answer really has this type's shape before it is exported. */
+  valueSchema: ZodType<FieldValueOf<T>>
   createField(id: FieldId): FieldOfType<T>
   /** The value a new response starts with. `today` is a local YYYY-MM-DD date. */
   initialValue(field: FieldOfType<T>, today: string): FieldValueOf<T>
@@ -28,6 +37,8 @@ export interface FieldDefinition<T extends FieldType> {
   isEmpty(value: FieldValueOf<T>): boolean
   /** Fill-time rules for a non-empty value. Required is checked by the engine, not here. */
   validateValue(field: FieldOfType<T>, value: FieldValueOf<T>): string | null
+  /** How a (non-empty) answer reads in the PDF. Empty answers are handled by the registry. */
+  formatForExport(field: FieldOfType<T>, value: FieldValueOf<T>): ExportContent
   /** Operator families other fields can use when this field is a rule target. None → not a target. */
   conditionKinds?: ConditionKind[]
   /** Select types: their options, for rule values and option clean-up. */

@@ -1,3 +1,4 @@
+import { dateValueSchema } from './dateSchema'
 import { formatIsoDate } from '../../lib/dates'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
@@ -7,6 +8,7 @@ import type { DateConfig } from './dateSchema'
 export const dateDefinition: FieldDefinition<'date'> = {
   type: 'date',
   displayName: 'Date',
+  valueSchema: dateValueSchema,
   capturesValue: true,
   conditionKinds: ['date'],
   createField: (id) => {
@@ -27,6 +29,10 @@ export const dateDefinition: FieldDefinition<'date'> = {
     }
     return []
   },
+  formatForExport: (_field, value) => ({
+    kind: 'answer',
+    lines: value === null ? [] : [formatIsoDate(value)],
+  }),
   isEmpty: (value) => value === null,
   validateValue: (field, value) => {
     const { minDate, maxDate } = field.config

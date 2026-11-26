@@ -1,12 +1,14 @@
+import { multiSelectValueSchema } from './multiSelectSchema'
 import type { Option } from '../fieldBase'
 import { createDefaultRequiredRules, createDefaultVisibility } from '../fieldBase'
 import type { FieldDefinition } from '../logicTypes'
-import { createOption, validateOptions } from '../shared/options'
+import { createOption, findOptionLabel, validateOptions } from '../shared/options'
 import type { MultiSelectConfig, MultiSelectValue } from './multiSelectSchema'
 
 export const multiSelectDefinition: FieldDefinition<'multiSelect'> = {
   type: 'multiSelect',
   displayName: 'Multi select',
+  valueSchema: multiSelectValueSchema,
   capturesValue: true,
   conditionKinds: ['multiSelect'],
   getOptions: (field) => field.config.options,
@@ -29,6 +31,17 @@ export const multiSelectDefinition: FieldDefinition<'multiSelect'> = {
     ...validateOptions(field.config.options),
     ...validateSelectionLimits(field.config),
   ],
+  formatForExport: (field, value) => ({
+    kind: 'answer',
+    lines: [
+      value
+        .map(
+          (optionId) =>
+            findOptionLabel(field.config.options, optionId) ?? 'Removed option',
+        )
+        .join(', '),
+    ],
+  }),
   isEmpty: (value) => value.length === 0,
   validateValue: (field, value) => {
     const { options, minSelections, maxSelections } = field.config

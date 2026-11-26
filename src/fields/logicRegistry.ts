@@ -2,7 +2,7 @@ import type { ConditionKind } from './conditionSchema'
 import type { FieldId, Option } from './fieldBase'
 import { validateFieldBase } from './fieldBase'
 import type { Field, FieldType, FieldValue } from './fieldUnion'
-import type { FieldDefinition, ResolvedField } from './logicTypes'
+import type { ExportContent, FieldDefinition, ResolvedField } from './logicTypes'
 import { calculationDefinition } from './calculation/calculationLogic'
 import { sectionHeaderDefinition } from './sectionHeader/sectionHeaderLogic'
 import { fileUploadDefinition } from './fileUpload/fileUploadLogic'
@@ -105,6 +105,25 @@ export function isComputedField(field: Field): boolean {
 
 export function isCalculationSource(field: Field): boolean {
   return getFieldDefinition(field.type).isCalculationSource ?? false
+}
+
+/**
+ * Export content for a stored answer. Values that are missing, empty, or don't
+ * match the field's type (e.g. hand-edited storage) export as "no answer".
+ */
+export function formatValueForExport(
+  field: Field,
+  value: FieldValue | undefined,
+): ExportContent {
+  const definition = getFieldDefinition(field.type)
+  if (!definition.capturesValue) {
+    return definition.formatForExport(field, null)
+  }
+  const parsed = definition.valueSchema.safeParse(value)
+  if (!parsed.success || definition.isEmpty(parsed.data)) {
+    return { kind: 'answer', lines: [] }
+  }
+  return definition.formatForExport(field, parsed.data)
 }
 
 export function capturesValue(field: Field): boolean {

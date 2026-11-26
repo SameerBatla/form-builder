@@ -10,7 +10,7 @@ import { getInitialValue, isComputedField } from '../fields/logicRegistry'
 import { toLocalIsoDate } from '../lib/dates'
 import { pluralize } from '../lib/format'
 import { Button } from '../ui/Button/Button'
-import { AlertCircleIcon } from '../ui/icons/icons'
+import { AlertCircleIcon, DownloadIcon } from '../ui/icons/icons'
 import styles from './FormFiller.module.css'
 
 export interface Submission {
@@ -23,7 +23,9 @@ interface FormFillerProps {
   fields: Field[]
   /** Small label above the title, e.g. "New response" or "Preview". */
   eyebrow: string
-  onSubmit: (submission: Submission) => void
+  /** Adds a "Submit & download PDF" button (fill mode; not in the builder preview). */
+  canDownloadPdf?: boolean
+  onSubmit: (submission: Submission, options: { downloadPdf: boolean }) => void
 }
 
 const FILL_ID_PREFIX = 'fill'
@@ -48,6 +50,7 @@ export default function FormFiller({
   title,
   fields,
   eyebrow,
+  canDownloadPdf = false,
   onSubmit,
 }: FormFillerProps) {
   const [today] = useState(() => toLocalIsoDate())
@@ -86,7 +89,12 @@ export default function FormFiller({
         ?.focus()
       return
     }
-    onSubmit(buildSubmission(fields, evaluation))
+    // Which button submitted the form: both run the same validation first.
+    const { nativeEvent } = event
+    const submitter = 'submitter' in nativeEvent ? nativeEvent.submitter : null
+    const downloadPdf =
+      submitter instanceof HTMLButtonElement && submitter.value === 'pdf'
+    onSubmit(buildSubmission(fields, evaluation), { downloadPdf })
   }
 
   return (
@@ -127,7 +135,13 @@ export default function FormFiller({
           </p>
         )}
         <div className={styles.actions}>
-          <Button type="submit" variant="primary">
+          {canDownloadPdf && (
+            <Button type="submit" name="intent" value="pdf">
+              <DownloadIcon />
+              Submit &amp; download PDF
+            </Button>
+          )}
+          <Button type="submit" variant="primary" name="intent" value="submit">
             Submit
           </Button>
         </div>
