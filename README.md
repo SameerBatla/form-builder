@@ -6,7 +6,7 @@ React 19 · TypeScript (strict) · Vite · react-router · zod · Vitest + Testi
 
 ![The builder: field types on the left, the form in the middle, and the Logic tab on the right showing a rule that reveals "Preferred city" when "Open to relocating?" is Yes](docs/screenshots/builder.png)
 
-[Run it](#run-it) · [Using it](#using-it) · [Storage](#storage) · [Architecture](#architecture) · [Conditional logic](#conditional-logic) · [Calculation and PDF](#calculation-and-pdf) · [Trade-offs](#trade-offs) · [Decisions](#decisions) · [Testing](#testing) · [Improvements](#what-id-improve-with-more-time)
+[Run it](#run-it) · [Using it](#using-it) · [Storage](#storage) · [Architecture](#architecture) · [Conditional logic](#conditional-logic) · [Calculation and PDF](#calculation-and-pdf) · [Trade-offs](#trade-offs) · [Decisions](#decisions) · [Testing](#testing) · [Improvements](#what-id-improve-with-more-time) · [How I worked](#how-i-worked)
 
 ---
 
@@ -209,6 +209,6 @@ I also checked the PDF output by rendering it to a real file in headless Chrome.
 
 ---
 
-## AI usage
+## How I worked
 
-See [`AI_USAGE_LOG.md`](AI_USAGE_LOG.md).
+[`docs/SPEC.md`](docs/SPEC.md) (resolved spec), [`docs/INTERVIEW.md`](docs/INTERVIEW.md) (the spec Q&A) and [`docs/PLAN.md`](docs/PLAN.md) (build plan) show how I worked. AI usage is described in [`AI_USAGE_LOG.md`](AI_USAGE_LOG.md).

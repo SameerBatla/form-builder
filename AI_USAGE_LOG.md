@@ -1,7 +1,7 @@
 # AI Usage Log
 
 **Tool:** Claude Code, with two models:
-- **Claude Opus 5.5 for planning:** the spec interview, `SPEC.md`, the design direction, the build plan, and the over-engineering reviews.
+- **Claude Opus 5.5 for planning:** the spec interview, `docs/SPEC.md`, the design direction, the build plan, and the over-engineering reviews.
 - **Claude Sonnet 5.5 for coding:** implementing each phase, writing the tests, and fixing what the tests and my manual testing found.
 **How I worked:** I made the product decisions, the AI implemented them in small phases, and I approved each phase (with a commit) after reviewing its summary and checking the app myself. `npm run check` (typecheck + lint + tests) had to pass before every commit.
 
@@ -14,7 +14,7 @@
 **Prompt:**
 > "Read the Task.md file and interview me in detail using the AskUserQuestion tool about literally anything: technical implementation, UI and UX, concerns, tradeoffs. Make sure the questions are not obvious. Be very in-depth and continue interviewing me until the specification is complete."
 
-**What the AI produced:** 48 questions in 12 rounds (conditional-logic semantics, calculation edge cases, storage, PDF approach, builder UX), which became `SPEC.md`.
+**What the AI produced:** 48 questions in 12 rounds (conditional-logic semantics, calculation edge cases, storage, PDF approach, builder UX), which became [`docs/SPEC.md`](docs/SPEC.md).
 
 **What I checked or changed:**
 - **I rejected a round as unclear.** It used jargon like "IDs + cascade on delete". I asked for it again, and it came back as concrete scenarios ("a dropdown has Red/Blue; a rule says show if = Red; you rename Red…"), which I could actually decide on.
