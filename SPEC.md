@@ -10,7 +10,7 @@ A browser-only form builder (React 19 + TypeScript strict + Vite). Users build f
 
 **Approved dependencies:** `react-router` (routing + unsaved-changes blocker) and `zod` (validating localStorage data). No other runtime dependencies. **No PDF libraries.**
 
-**Theme:** light only, visual direction in `DESIGN.md` (Keychain-inspired: Inter, slate neutrals, yellow primary, 6px corners, hand-written line icons).
+**Theme:** light only, Keychain-inspired (Inter, slate neutrals, yellow primary, 6px corners, hand-written line icons); tokens live in `src/index.css`.
 
 ---
 

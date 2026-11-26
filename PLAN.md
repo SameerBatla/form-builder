@@ -1,10 +1,10 @@
 # Plan
 **Mode:** Build. No pauses between steps; stop at the end of each phase. Walk the user through every step afterwards.
 **Goal:** Build a form template, fill it with live conditions and calculations, submit it, and export it as a PDF, all in localStorage.
-**Spec:** `SPEC.md` (resolved from `TASK.md`; the Q&A is in `INTERVIEW.md`). **Design:** `DESIGN.md`.
+**Spec:** `SPEC.md` (resolved from `TASK.md`; the Q&A is in `INTERVIEW.md`).
 
 ## Architecture
-- Look: `DESIGN.md` tokens in `index.css`, hand-written SVG icons in `ui/icons` · Keychain-inspired, no icon library
+- Look: design tokens in `index.css`, hand-written SVG icons in `ui/icons` · Keychain-inspired, no icon library
 - Field types: one folder per type in `fields/`, `logicRegistry.ts` (pure) + `uiRegistry.ts` · new field = folder + 2 registry lines + 1 union member
 - Rules: each field has `visibility` / `required` groups `{ default, match: all|any, conditions }`; effect = opposite of default · conflicting effects can't happen
 - Engine: pure `engine/evaluateForm`, topological order, hidden = empty downstream; derived on each render, never state · chains correct, testable without React
@@ -21,7 +21,7 @@
 - [x] 4. Templates list shows saved templates with counts and New Template
 
 ### Phase 2: Builder (Single Line Text slice)
-- [x] 5. Apply DESIGN.md tokens, Inter, SVG icon set; restyle templates list
+- [x] 5. Apply design tokens, Inter, SVG icon set; restyle templates list
 - [x] 6. Builder reducer: add below selected, select, update, move, delete
 - [x] 7. Three-panel builder: palette click-to-add, canvas, Single Line Text config
 - [x] 8. Save with config validation, red dots, editable title
@@ -130,7 +130,7 @@ Full rationale in `SPEC.md` §9.
 | Storage (validated, per record) | `storage/collectionStore.ts → readCollection, writeRecord`; `templateStore.ts`, `responseStore.ts` | — |
 | Unloadable-data notice | `storage/storageHealth.ts → countUnloadableRecords` | `ui/Banner → Banner` (in `AppLayout`) |
 | Templates list | `templateStore.ts → sortByLastEdited`; `responseStore.ts → countResponsesByTemplate`; `lib/dates.ts → formatRelativeTime` | `pages/TemplatesListPage → TemplatesListPage, TemplateCard` |
-| Design tokens & icons | `index.css` tokens (DESIGN.md) | `ui/icons/icons.tsx`, `ui/IconTile`, `ui/Button` |
+| Design tokens & icons | `index.css` tokens | `ui/icons/icons.tsx`, `ui/IconTile`, `ui/Button` |
 | Builder state | `builder/builderReducer.ts → builderReducer, finalIndexForDrop` | — |
 | Builder layout | — | `builder/TemplateBuilder` → `BuilderToolbar`, `FieldPalette`, `FormCanvas`, `CanvasFieldCard`, `ConfigPanel` |
 | Field UI registry | `fields/uiRegistry.ts → fieldUis`; `fields/FieldComponents.tsx → FieldConfigPanel, FieldFillInput` | `fields/singleLineText → SingleLineTextConfig, SingleLineTextInput` |

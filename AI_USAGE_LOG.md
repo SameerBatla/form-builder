@@ -61,7 +61,7 @@
 
 **What the AI did:**
 - The site blocked automated fetching, so instead of guessing the brand it opened the site in a temporary, separate Chrome window and read the real computed styles: Inter, slate text colours, 6px corners, a yellow primary button with black text.
-- It wrote `DESIGN.md` from those styles and the screenshots, without using Keychain's logo or name.
+- It wrote a design brief from those styles and the screenshots (now the tokens in `src/index.css`), without using Keychain's logo or name.
 
 **What I rejected:** an icon library (*"dont go for a lib for now"*), so all icons are hand-written inline SVG.
 
