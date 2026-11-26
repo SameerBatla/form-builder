@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router'
+import { useBlocker, useLocation, useNavigate, useSearchParams } from 'react-router'
 import type { FieldReference } from '../engine/references'
 import { findFieldReferences, findOptionRuleImpact } from '../engine/references'
 import { countIssues, validateTemplate } from '../engine/validateTemplate'
@@ -45,6 +45,11 @@ function describeReference(reference: FieldReference): string {
   return parts.join(' and ')
 }
 
+/** True when this history entry was pushed by our own "Preview" button. */
+function wasPreviewOpenedHere(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && 'openedPreview' in state
+}
+
 function describeOptionImpact(removedLabels: string[], affectedLabels: string[]): string {
   const quote = (labels: string[]) => labels.map((label) => `“${label}”`).join(', ')
   const verb = removedLabels.length === 1 ? 'is' : 'are'
@@ -78,7 +83,11 @@ export default function TemplateBuilder({
   // Issues stay hidden until the first blocked Save, then update live.
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false)
   const [today] = useState(() => toLocalIsoDate())
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  // Preview lives in the URL (?preview=1) so the browser's Back button closes it
+  // instead of leaving the builder. Search-only changes don't trip the blocker below.
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isPreviewOpen = searchParams.get('preview') === '1'
   const [pendingChange, setPendingChange] = useState<PendingChange | null>(null)
 
   // Reference checks are enough: the reducer only creates new objects on real edits.
@@ -169,6 +178,20 @@ export default function TemplateBuilder({
     setPendingChange(null)
   }
 
+  const handleOpenPreview = () => {
+    setSearchParams({ preview: '1' }, { state: { openedPreview: true } })
+  }
+
+  const handleClosePreview = () => {
+    if (wasPreviewOpenedHere(location.state)) {
+      // Same as pressing Back: pops the entry "Preview" pushed.
+      navigate(-1)
+    } else {
+      // Opened from the URL directly (e.g. after a refresh): just drop the flag.
+      setSearchParams({}, { replace: true })
+    }
+  }
+
   const handleTitleChange = (title: string) => {
     dispatch({ type: 'setTitle', title })
   }
@@ -206,7 +229,7 @@ export default function TemplateBuilder({
         saveStatus={saveStatus}
         isTitleInvalid={visibleIssues !== null && state.title.trim() === ''}
         onTitleChange={handleTitleChange}
-        onPreview={() => setIsPreviewOpen(true)}
+        onPreview={handleOpenPreview}
         onSave={handleSave}
       />
       <div className={styles.panels}>
@@ -251,7 +274,7 @@ export default function TemplateBuilder({
         <PreviewModal
           title={state.title}
           fields={state.fields}
-          onClose={() => setIsPreviewOpen(false)}
+          onClose={handleClosePreview}
         />
       )}
       {pendingChange?.kind === 'deleteField' && (

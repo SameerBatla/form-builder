@@ -148,7 +148,7 @@ The document has a header (title, submission time, a short response reference), 
 - A field's type is **fixed** after creation.
 - Invalid settings **block Save**, with reasons and links to the fields. That includes everything storage would reject (e.g. a length of `-1`). Half-written rules are allowed while editing.
 - **Unsaved changes** → confirm on in-app navigation and `beforeunload`. No autosave.
-- Preview renders the **unsaved** builder state; its Submit validates but never saves.
+- Preview renders the **unsaved** builder state; its Submit validates but never saves. It lives in the URL (`?preview=1`), so the browser's **Back button closes the preview** instead of leaving the builder.
 
 **Fill and validation**
 - Errors appear **after blur or a submit attempt, then update live**. Submit focuses the first invalid field.

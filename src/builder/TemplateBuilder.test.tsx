@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { createField } from '../fields/logicRegistry'
@@ -391,4 +391,37 @@ test('removing a select option used by a rule asks first, then removes the rule'
 
   expect(screen.queryByRole('textbox', { name: 'Option 2' })).not.toBeInTheDocument()
   expect(within(canvas()).queryByText('Logic')).not.toBeInTheDocument()
+})
+
+describe('preview and the Back button', () => {
+  test('Back closes the preview and stays in the builder, without the unsaved-changes prompt', async () => {
+    const user = userEvent.setup()
+    saveTemplate(buildTemplate('t1'))
+    const { router } = renderRoute('/templates/t1/edit')
+    // An unsaved change, so leaving the builder would ask first.
+    await user.type(screen.getByRole('textbox', { name: 'Label' }), '!')
+
+    await user.click(screen.getByRole('button', { name: 'Preview' }))
+    expect(router.state.location.search).toBe('?preview=1')
+    expect(screen.getByRole('dialog', { name: 'Form preview' })).toBeInTheDocument()
+
+    await act(() => router.navigate(-1))
+
+    expect(screen.queryByRole('dialog', { name: 'Form preview' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/templates/t1/edit')
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+  })
+
+  test('Close preview returns to the builder; a direct ?preview=1 link can be closed too', async () => {
+    const user = userEvent.setup()
+    saveTemplate(buildTemplate('t1'))
+    const { router } = renderRoute('/templates/t1/edit?preview=1')
+    expect(screen.getByRole('dialog', { name: 'Form preview' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Close preview' }))
+    expect(screen.queryByRole('dialog', { name: 'Form preview' })).not.toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/templates/t1/edit')
+    expect(router.state.location.search).toBe('')
+  })
 })
