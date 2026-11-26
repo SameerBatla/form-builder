@@ -5,7 +5,6 @@ import type { FieldDefinition } from '../logicTypes'
 import type { FileMeta, FileUploadConfig } from './fileUploadSchema'
 
 const EXTENSION_PATTERN = /^\.[a-z0-9]+$/
-const MIME_PATTERN = /^[a-z]+\/([a-z0-9.+-]+|\*)$/
 
 export const fileUploadDefinition: FieldDefinition<'fileUpload'> = {
   type: 'fileUpload',
@@ -30,9 +29,9 @@ export const fileUploadDefinition: FieldDefinition<'fileUpload'> = {
       issues.push('Max files must be a whole number, 1 or more.')
     }
     for (const allowedType of allowedTypes) {
-      if (!EXTENSION_PATTERN.test(allowedType) && !MIME_PATTERN.test(allowedType)) {
+      if (!EXTENSION_PATTERN.test(allowedType)) {
         issues.push(
-          `"${allowedType}" isn’t a valid file type. Use an extension like .pdf or a type like image/*.`,
+          `"${allowedType}" isn’t a valid file type. Use an extension like .pdf.`,
         )
       }
     }
@@ -54,33 +53,25 @@ export const fileUploadDefinition: FieldDefinition<'fileUpload'> = {
   },
 }
 
-/** ".PDF, png, image/*" → [".pdf", ".png", "image/*"]. A bare word becomes an extension. */
+/** ".PDF, png" → [".pdf", ".png"]. A bare word becomes an extension. */
 export function parseAllowedTypes(text: string): string[] {
   return text
     .split(',')
     .map((part) => part.trim().toLowerCase())
     .filter((part) => part !== '')
-    .map((part) => (part.startsWith('.') || part.includes('/') ? part : `.${part}`))
+    .map((part) => (part.startsWith('.') ? part : `.${part}`))
 }
 
+/** Matched by file name extension, case-insensitively. An empty list allows any file. */
 export function isFileAllowed(
-  file: Pick<FileMeta, 'name' | 'type'>,
+  file: Pick<FileMeta, 'name'>,
   allowedTypes: string[],
 ): boolean {
   if (allowedTypes.length === 0) {
     return true
   }
   const name = file.name.toLowerCase()
-  const mimeType = file.type.toLowerCase()
-  return allowedTypes.some((allowedType) => {
-    if (allowedType.startsWith('.')) {
-      return name.endsWith(allowedType)
-    }
-    if (allowedType.endsWith('/*')) {
-      return mimeType.startsWith(allowedType.slice(0, -1))
-    }
-    return mimeType === allowedType
-  })
+  return allowedTypes.some((extension) => name.endsWith(extension))
 }
 
 /** Adds what fits; explains everything that didn't. */

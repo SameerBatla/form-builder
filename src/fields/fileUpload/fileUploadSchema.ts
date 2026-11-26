@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { inputFieldBaseSchema } from '../fieldBase'
 
 export const fileUploadConfigSchema = z.object({
-  /** Normalised: ".pdf" extensions or "image/*" MIME types. Empty = any type. */
+  /** Normalised extensions like ".pdf". Empty = any type. */
   allowedTypes: z.array(z.string()),
   maxFiles: z.number().int().positive(),
 })

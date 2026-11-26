@@ -25,7 +25,7 @@ export default function FileUploadConfig({
       <FormControl
         label="Allowed file types"
         htmlFor={`${idPrefix}-types`}
-        hint="Comma-separated, e.g. .pdf, .png, image/*. Empty allows any type."
+        hint="Comma-separated extensions, e.g. .pdf, .png. Empty allows any type."
       >
         <TextInput
           id={`${idPrefix}-types`}

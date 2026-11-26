@@ -1,13 +1,9 @@
 import { useEffect, useReducer, useState } from 'react'
 import { useBlocker, useLocation, useNavigate, useSearchParams } from 'react-router'
-import type { FieldReference } from '../engine/references'
-import { findFieldReferences, findOptionRuleImpact } from '../engine/references'
 import { countIssues, validateTemplate } from '../engine/validateTemplate'
 import type { FieldId } from '../fields/fieldBase'
 import type { Field, FieldType } from '../fields/fieldUnion'
-import { getFieldOptions } from '../fields/logicRegistry'
 import { toLocalIsoDate } from '../lib/dates'
-import { pluralize } from '../lib/format'
 import { createId } from '../lib/id'
 import type { Template } from '../storage/schema'
 import { templateSchema } from '../storage/schema'
@@ -20,42 +16,16 @@ import { builderReducer } from './builderReducer'
 import ConfigPanel from './ConfigPanel'
 import FieldPalette from './FieldPalette'
 import FormCanvas from './FormCanvas'
+import type { PendingChange } from './pendingChange'
+import { findDeleteFieldChange, findRemoveOptionsChange } from './pendingChange'
+import PendingChangeDialog from './PendingChangeDialog'
 import PreviewModal from './PreviewModal'
 import SaveIssuesBar from './SaveIssuesBar'
 import styles from './TemplateBuilder.module.css'
 
-/** A change that needs the builder's confirmation because it also removes rules. */
-type PendingChange =
-  | { kind: 'deleteField'; fieldId: FieldId; label: string; references: FieldReference[] }
-  | {
-      kind: 'removeOptions'
-      field: Field
-      removedLabels: string[]
-      affectedLabels: string[]
-    }
-
-function describeReference(reference: FieldReference): string {
-  const parts: string[] = []
-  if (reference.ruleCount > 0) {
-    parts.push(`${pluralize(reference.ruleCount, 'rule')} in “${reference.label}”`)
-  }
-  if (reference.usesAsSource) {
-    parts.push(`the calculation “${reference.label}”`)
-  }
-  return parts.join(' and ')
-}
-
 /** True when this history entry was pushed by our own "Preview" button. */
 function wasPreviewOpenedHere(state: unknown): boolean {
   return typeof state === 'object' && state !== null && 'openedPreview' in state
-}
-
-function describeOptionImpact(removedLabels: string[], affectedLabels: string[]): string {
-  const quote = (labels: string[]) => labels.map((label) => `“${label}”`).join(', ')
-  const verb = removedLabels.length === 1 ? 'is' : 'are'
-  return `${quote(removedLabels)} ${verb} used in rules on ${quote(affectedLabels)}. Removing ${
-    removedLabels.length === 1 ? 'it' : 'them'
-  } also updates or removes those rules.`
 }
 
 function toBuilderState(template: Template): BuilderState {
@@ -135,15 +105,9 @@ export default function TemplateBuilder({
   }
 
   const handleUpdateField = (field: Field) => {
-    // Removing a select option that rules use: confirm first (Q10).
-    const affectedLabels = findOptionRuleImpact(state.fields, field)
-    if (affectedLabels.length > 0) {
-      const previous = state.fields.find((candidate) => candidate.id === field.id)
-      const keptIds = new Set(getFieldOptions(field).map((option) => option.id))
-      const removedLabels = (previous ? getFieldOptions(previous) : [])
-        .filter((option) => !keptIds.has(option.id))
-        .map((option) => option.label.trim() || 'Untitled option')
-      setPendingChange({ kind: 'removeOptions', field, removedLabels, affectedLabels })
+    const change = findRemoveOptionsChange(state.fields, field)
+    if (change) {
+      setPendingChange(change)
       return
     }
     dispatch({ type: 'updateField', field })
@@ -158,17 +122,15 @@ export default function TemplateBuilder({
   }
 
   const handleDeleteField = (fieldId: FieldId) => {
-    // Deleting a field other fields depend on: confirm, then cascade (Q9).
-    const references = findFieldReferences(state.fields, fieldId)
-    if (references.length > 0) {
-      const field = state.fields.find((candidate) => candidate.id === fieldId)
-      const label = field?.label.trim() || 'Untitled field'
-      setPendingChange({ kind: 'deleteField', fieldId, label, references })
+    const change = findDeleteFieldChange(state.fields, fieldId)
+    if (change) {
+      setPendingChange(change)
       return
     }
     dispatch({ type: 'deleteField', fieldId })
   }
 
+  // Deleting or removing options that rules use is confirmed first (Q9, Q10).
   const handleConfirmPendingChange = () => {
     if (pendingChange?.kind === 'deleteField') {
       dispatch({ type: 'deleteField', fieldId: pendingChange.fieldId })
@@ -277,38 +239,12 @@ export default function TemplateBuilder({
           onClose={handleClosePreview}
         />
       )}
-      {pendingChange?.kind === 'deleteField' && (
-        <ConfirmDialog
-          title={`Delete “${pendingChange.label}”?`}
-          confirmLabel="Delete field and rules"
-          tone="danger"
+      {pendingChange && (
+        <PendingChangeDialog
+          change={pendingChange}
           onConfirm={handleConfirmPendingChange}
           onCancel={() => setPendingChange(null)}
-        >
-          <p>Other fields use it:</p>
-          <ul>
-            {pendingChange.references.map((reference) => (
-              <li key={reference.fieldId}>{describeReference(reference)}</li>
-            ))}
-          </ul>
-          <p>Deleting it also removes those rules and references.</p>
-        </ConfirmDialog>
-      )}
-      {pendingChange?.kind === 'removeOptions' && (
-        <ConfirmDialog
-          title={`Remove ${pluralize(pendingChange.removedLabels.length, 'option')}?`}
-          confirmLabel="Remove and update rules"
-          tone="danger"
-          onConfirm={handleConfirmPendingChange}
-          onCancel={() => setPendingChange(null)}
-        >
-          <p>
-            {describeOptionImpact(
-              pendingChange.removedLabels,
-              pendingChange.affectedLabels,
-            )}
-          </p>
-        </ConfirmDialog>
+        />
       )}
       {blocker.state === 'blocked' && (
         <ConfirmDialog

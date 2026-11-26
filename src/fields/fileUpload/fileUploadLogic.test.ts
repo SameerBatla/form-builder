@@ -20,12 +20,8 @@ describe('file upload: config', () => {
     expect(definition.initialValue(base, '2026-11-26')).toEqual([])
   })
 
-  test('parseAllowedTypes normalises a comma-separated list', () => {
-    expect(parseAllowedTypes(' .PDF, png ,image/*,, ')).toEqual([
-      '.pdf',
-      '.png',
-      'image/*',
-    ])
+  test('parseAllowedTypes normalises a comma-separated list of extensions', () => {
+    expect(parseAllowedTypes(' .PDF, png ,, ')).toEqual(['.pdf', '.png'])
     expect(parseAllowedTypes('')).toEqual([])
   })
 
@@ -35,21 +31,19 @@ describe('file upload: config', () => {
     ])
   })
 
-  test('allowed types must look like .ext or type/subtype', () => {
-    expect(
-      definition.validateConfig(withConfig({ allowedTypes: ['.pdf', 'p d f'] })),
-    ).toEqual([
-      '"p d f" isn’t a valid file type. Use an extension like .pdf or a type like image/*.',
+  test('allowed types must be extensions like .pdf', () => {
+    const config = withConfig({ allowedTypes: ['.pdf', '.image/*'] })
+    expect(definition.validateConfig(config)).toEqual([
+      '".image/*" isn’t a valid file type. Use an extension like .pdf.',
     ])
   })
 })
 
 describe('file upload: matching', () => {
-  test('extensions match case-insensitively; MIME types support wildcards', () => {
+  test('matches the file name extension, case-insensitively', () => {
     expect(isFileAllowed(pdf, ['.pdf'])).toBe(true)
-    expect(isFileAllowed(png, ['image/*'])).toBe(true)
-    expect(isFileAllowed(png, ['image/jpeg'])).toBe(false)
-    expect(isFileAllowed(docx, ['.pdf', 'image/*'])).toBe(false)
+    expect(isFileAllowed(png, ['.pdf', '.png'])).toBe(true)
+    expect(isFileAllowed(docx, ['.pdf', '.png'])).toBe(false)
   })
 
   test('an empty list allows any file', () => {

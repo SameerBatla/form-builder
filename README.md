@@ -32,7 +32,7 @@ npm run build      # production build
 | Date | Pre-fill with today (local date), min/max date |
 | Single select | Radio, dropdown or tiles: one value, identical validation |
 | Multi select | Min/max selections; at the max, the remaining options are disabled |
-| File upload | Allowed types (`.pdf`, `image/*`), max files; **metadata only** |
+| File upload | Allowed extensions (`.pdf, .png`), max files; **metadata only** |
 | Section header | XS–XL headings (h6–h2); display only |
 | Calculation | Sum / average / min / max of Number fields, read-only, live |
 | Conditional logic | Not a field: every field has **Visibility** and (input fields) **Required** rules |
@@ -153,7 +153,7 @@ The document has a header (title, submission time, a short response reference), 
 **Fill and validation**
 - Errors appear **after blur or a submit attempt, then update live**. Submit focuses the first invalid field.
 - Whitespace-only text counts as empty. Optional empty fields skip length, range and selection rules.
-- Text `maxLength` is a **hard stop with a counter**. A Multi Select at its max **disables** the remaining options. File Upload **rejects** wrong types and extra files with a message and keeps the valid ones.
+- Text `maxLength` is a **hard stop with a counter**. A Multi Select at its max **disables** the remaining options. File Upload matches **extensions only** (as in the spec's example) and **rejects** wrong types and extra files with a message, keeping the valid ones.
 - Number accepts only digits, `-` and one `.`. Incomplete input (`-`) counts as empty, and values are **rounded half away from zero** on blur and again before storing.
 - Date pre-fill applies even if today is out of range (it then shows the range error, and the builder shows a warning).
 - An optional single select can be cleared ("Clear selection" or "— Select —").
