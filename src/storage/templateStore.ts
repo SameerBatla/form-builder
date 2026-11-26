@@ -13,8 +13,9 @@ export function loadTemplate(id: string): Template | null {
   return templates.find((template) => template.id === id) ?? null
 }
 
-export function saveTemplate(template: Template) {
-  writeRecord(TEMPLATES_KEY, template)
+/** False when the browser refused the write (e.g. storage is full). */
+export function saveTemplate(template: Template): boolean {
+  return writeRecord(TEMPLATES_KEY, template)
 }
 
 export function sortByLastEdited(templates: Template[]): Template[] {

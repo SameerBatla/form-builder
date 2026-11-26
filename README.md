@@ -78,7 +78,7 @@ Two `localStorage` keys, each holding an object of `id → record`:
 }
 ```
 
-- **Every record is validated with zod when it's read.** Invalid records are skipped (the app shows a notice) and left as they are on later saves, so one bad record never hides or deletes the others. If a whole key isn't valid JSON, it loads as empty and the next save replaces it.
+- **Every record is validated with zod when it's read.** Invalid records are skipped (the app shows a notice) and left as they are on later saves, so one bad record never hides or deletes the others. If a whole key isn't valid JSON, it loads as empty and the next save replaces it. If the browser refuses a save (usually because storage is full), the app says so and keeps your work.
 - **A response keeps its own copy of the form,** so editing a template never changes old responses or their PDFs. I first planned template versioning; a copy gives the same guarantee with much less code. The cost is storage that grows with every response, within the browser's `localStorage` quota (usually about 5 MB).
 - **The visible fields and calculated values are saved at submit,** so an export never re-runs the rules.
 - **Types are inferred from the zod schemas,** so the stored shape and the TypeScript types can't drift apart. The `v1` in the keys leaves room for a migration.
@@ -190,7 +190,7 @@ Where the spec left room for interpretation:
 
 ## Testing
 
-262 tests in 35 files, next to the code they cover:
+267 tests in 35 files, next to the code they cover:
 - **Rules and calculations** (written test-first from the spec): every operator, ALL/ANY, chained rules, hidden required fields, loops, deleted targets, calculation results.
 - **Field types and storage:** defaults, validation, export formatting, invalid stored data.
 - **UI behaviour:** building, reordering and saving a form; fields showing and hiding live; submitting with a hidden required field; a calculation updating as you type; the three single select displays; the responses list and PDF actions.

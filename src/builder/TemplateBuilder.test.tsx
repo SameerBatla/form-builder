@@ -1,4 +1,6 @@
-import { act, fireEvent, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { createMemoryRouter, RouterProvider } from 'react-router'
+import { routes } from '../routes'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { createField } from '../fields/logicRegistry'
@@ -6,6 +8,7 @@ import { loadResponsesForTemplate } from '../storage/responseStore'
 import { loadTemplate, loadTemplates, saveTemplate } from '../storage/templateStore'
 import { buildTemplate } from '../test/fixtures'
 import { whenText } from '../test/ruleFixtures'
+import { simulateFullStorage } from '../test/storageFull'
 import { renderRoute } from '../test/renderRoute'
 
 beforeEach(() => {
@@ -424,4 +427,53 @@ describe('preview and the Back button', () => {
     expect(router.state.location.pathname).toBe('/templates/t1/edit')
     expect(router.state.location.search).toBe('')
   })
+})
+
+describe('browser history and the unsaved-changes guard', () => {
+  test('Back with unsaved changes asks first; Keep editing stays in the builder', async () => {
+    const user = userEvent.setup()
+    saveTemplate(buildTemplate('t1'))
+    const router = createMemoryRouter(routes, {
+      initialEntries: ['/', '/templates/t1/edit'],
+      initialIndex: 1,
+    })
+    render(<RouterProvider router={router} />)
+    await user.type(screen.getByRole('textbox', { name: 'Label' }), '!')
+
+    await act(() => router.navigate(-1))
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('Discard unsaved changes?')
+
+    await user.click(screen.getByRole('button', { name: 'Keep editing' }))
+    expect(router.state.location.pathname).toBe('/templates/t1/edit')
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+  })
+
+  test('Back without unsaved changes leaves straight away', async () => {
+    saveTemplate(buildTemplate('t1'))
+    const router = createMemoryRouter(routes, {
+      initialEntries: ['/', '/templates/t1/edit'],
+      initialIndex: 1,
+    })
+    render(<RouterProvider router={router} />)
+    await act(() => router.navigate(-1))
+    expect(router.state.location.pathname).toBe('/')
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+})
+
+test('if storage is full, Save says so and keeps the unsaved changes', async () => {
+  const user = userEvent.setup()
+  saveTemplate(buildTemplate('t1'))
+  renderRoute('/templates/t1/edit')
+  await user.type(screen.getByRole('textbox', { name: 'Label' }), '!')
+
+  const fullStorage = simulateFullStorage()
+  await user.click(screen.getByRole('button', { name: 'Save' }))
+  fullStorage.mockRestore()
+
+  expect(
+    screen.getByText(/Couldn’t save: your browser’s storage is full/),
+  ).toBeInTheDocument()
+  expect(screen.getByText('Unsaved changes')).toBeInTheDocument()
+  expect(loadTemplate('t1')?.fields[0].label).toBe('Single line text')
 })

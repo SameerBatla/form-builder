@@ -6,13 +6,17 @@ import { createId } from '../../lib/id'
 import { printResponse } from '../../export/printResponse'
 import { saveResponse } from '../../storage/responseStore'
 import type { FormResponse } from '../../storage/schema'
+import { STORAGE_FULL_MESSAGE } from '../../storage/storageMessages'
 import { loadTemplate } from '../../storage/templateStore'
+import Banner from '../../ui/Banner/Banner'
+import styles from './FillPage.module.css'
 import NotFoundPage from '../NotFoundPage/NotFoundPage'
 
 export default function FillPage() {
   const { templateId = '' } = useParams()
   const navigate = useNavigate()
   const [template] = useState(() => loadTemplate(templateId))
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   if (!template) {
     return <NotFoundPage />
@@ -28,7 +32,11 @@ export default function FillPage() {
       form: { title: template.title, fields: template.fields },
       ...submission,
     }
-    saveResponse(response)
+    if (!saveResponse(response)) {
+      // Stay on the page so the filled-in answers aren't lost.
+      setSubmitError(STORAGE_FULL_MESSAGE)
+      return
+    }
     if (options.downloadPdf) {
       // Printed from the saved response, so the PDF has the real timestamp.
       void printResponse(response)
@@ -38,6 +46,13 @@ export default function FillPage() {
 
   return (
     <main className="page">
+      {submitError && (
+        <div className={styles.error}>
+          <Banner tone="warning" onDismiss={() => setSubmitError(null)}>
+            {submitError}
+          </Banner>
+        </div>
+      )}
       <FormFiller
         title={template.title}
         fields={template.fields}

@@ -8,6 +8,7 @@ import {
 import { RESPONSES_KEY, TEMPLATES_KEY } from './schema'
 import { loadTemplate, loadTemplates, saveTemplate } from './templateStore'
 import { buildResponse, buildTemplate } from '../test/fixtures'
+import { simulateFullStorage } from '../test/storageFull'
 
 function writeRaw(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value))
@@ -112,5 +113,21 @@ describe('responses', () => {
   test('bad data: a malformed response is skipped', () => {
     writeRaw(RESPONSES_KEY, { r1: { id: 'r1', values: 'oops' } })
     expect(loadResponses()).toEqual({ responses: [], skippedCount: 1 })
+  })
+})
+
+describe('when the browser refuses a write (storage full)', () => {
+  test('saves report failure instead of throwing, and stored data is unchanged', () => {
+    const template = buildTemplate('t1')
+    saveTemplate(template)
+    const fullStorage = simulateFullStorage()
+
+    expect(saveTemplate({ ...template, title: 'Renamed' })).toBe(false)
+    expect(saveResponse(buildResponse('r1', template))).toBe(false)
+    expect(deleteResponse('r1')).toBe(false)
+
+    fullStorage.mockRestore()
+    expect(loadTemplate('t1')?.title).toBe('Template t1')
+    expect(loadResponses().responses).toEqual([])
   })
 })

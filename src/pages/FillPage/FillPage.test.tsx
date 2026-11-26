@@ -7,6 +7,7 @@ import { loadResponsesForTemplate } from '../../storage/responseStore'
 import { saveTemplate } from '../../storage/templateStore'
 import { buildTemplate } from '../../test/fixtures'
 import { renderRoute } from '../../test/renderRoute'
+import { simulateFullStorage } from '../../test/storageFull'
 
 beforeEach(() => {
   localStorage.clear()
@@ -113,4 +114,20 @@ describe('responses list after submit', () => {
     renderRoute('/templates/nope/fill')
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
   })
+})
+
+test('if storage is full, Submit says so and stays on the form with the answers', async () => {
+  const user = userEvent.setup()
+  const { router } = seed([textField('name', 'Full name')])
+  await user.type(screen.getByRole('textbox', { name: 'Full name' }), 'Jane')
+
+  const fullStorage = simulateFullStorage()
+  await user.click(screen.getByRole('button', { name: 'Submit' }))
+  fullStorage.mockRestore()
+
+  expect(
+    screen.getByText(/Couldn’t save: your browser’s storage is full/),
+  ).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe('/templates/t1/fill')
+  expect(screen.getByRole('textbox', { name: 'Full name' })).toHaveValue('Jane')
 })

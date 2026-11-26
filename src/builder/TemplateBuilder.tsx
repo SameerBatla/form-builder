@@ -7,7 +7,9 @@ import { toLocalIsoDate } from '../lib/dates'
 import { createId } from '../lib/id'
 import type { Template } from '../storage/schema'
 import { templateSchema } from '../storage/schema'
+import { STORAGE_FULL_MESSAGE } from '../storage/storageMessages'
 import { saveTemplate } from '../storage/templateStore'
+import Banner from '../ui/Banner/Banner'
 import ConfirmDialog from '../ui/ConfirmDialog/ConfirmDialog'
 import type { SaveStatus } from './BuilderToolbar'
 import BuilderToolbar from './BuilderToolbar'
@@ -52,6 +54,8 @@ export default function TemplateBuilder({
   const [savedTemplate, setSavedTemplate] = useState(initialTemplate)
   // Issues stay hidden until the first blocked Save, then update live.
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false)
+  // Shown when a valid form still couldn't be written (e.g. storage is full).
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [today] = useState(() => toLocalIsoDate())
   // Preview lives in the URL (?preview=1) so the browser's Back button closes it
   // instead of leaving the builder. Search-only changes don't trip the blocker below.
@@ -171,12 +175,17 @@ export default function TemplateBuilder({
     }
     // Last line of defence: never write something the next load would reject.
     if (!templateSchema.safeParse(template).success) {
-      window.alert(
+      setSaveError(
         'This form has a setting that can’t be saved. Please check the fields.',
       )
       return
     }
-    saveTemplate(template)
+    if (!saveTemplate(template)) {
+      // Nothing is lost: the edits stay in the builder until a save succeeds.
+      setSaveError(`${STORAGE_FULL_MESSAGE} Your changes are still here.`)
+      return
+    }
+    setSaveError(null)
     setSavedTemplate(template)
     setHasAttemptedSave(false)
     if (isNew) {
@@ -194,6 +203,11 @@ export default function TemplateBuilder({
         onPreview={handleOpenPreview}
         onSave={handleSave}
       />
+      {saveError && (
+        <Banner tone="warning" onDismiss={() => setSaveError(null)}>
+          {saveError}
+        </Banner>
+      )}
       <div className={styles.panels}>
         <aside className={styles.palette}>
           <FieldPalette onAddField={handleAddField} />

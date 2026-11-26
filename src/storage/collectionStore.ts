@@ -54,21 +54,30 @@ export function readCollection<Schema extends z.ZodType<{ id: string }>>(
   return { records, skippedCount }
 }
 
-function writeRaw(key: string, update: (collection: RawCollection) => void) {
+/**
+ * Returns false when the browser refuses the write (usually because storage is
+ * full), so callers can tell the user instead of failing silently.
+ */
+function writeRaw(key: string, update: (collection: RawCollection) => void): boolean {
   // A key that isn't a JSON object at all can't be partially kept: start fresh.
   const collection = readRaw(key) ?? {}
   update(collection)
-  localStorage.setItem(key, JSON.stringify(collection))
+  try {
+    localStorage.setItem(key, JSON.stringify(collection))
+    return true
+  } catch {
+    return false
+  }
 }
 
-export function writeRecord(key: string, record: { id: string }) {
-  writeRaw(key, (collection) => {
+export function writeRecord(key: string, record: { id: string }): boolean {
+  return writeRaw(key, (collection) => {
     collection[record.id] = record
   })
 }
 
-export function removeRecord(key: string, id: string) {
-  writeRaw(key, (collection) => {
+export function removeRecord(key: string, id: string): boolean {
+  return writeRaw(key, (collection) => {
     delete collection[id]
   })
 }

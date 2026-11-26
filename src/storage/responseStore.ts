@@ -31,10 +31,11 @@ export function countResponsesByTemplate(responses: FormResponse[]): Map<string,
   return counts
 }
 
-export function saveResponse(response: FormResponse) {
-  writeRecord(RESPONSES_KEY, response)
+/** False when the browser refused the write (e.g. storage is full). */
+export function saveResponse(response: FormResponse): boolean {
+  return writeRecord(RESPONSES_KEY, response)
 }
 
-export function deleteResponse(id: string) {
-  removeRecord(RESPONSES_KEY, id)
+export function deleteResponse(id: string): boolean {
+  return removeRecord(RESPONSES_KEY, id)
 }

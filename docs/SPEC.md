@@ -261,7 +261,7 @@ Two keys, each a `Record<id, …>`, validated with **zod** on read:
 - **Why `visibleFieldIds` + computed calculation values:** the response freezes what the user saw. Re-exporting never re-runs the engine, so later engine changes can't alter history.
 - **Bad data:** each record is validated on its own. Invalid records are skipped (left in storage, not deleted), and a dismissible banner says "N items couldn't be loaded". If a whole key is unparseable JSON, it loads as empty (counted as 1 skipped item) and is replaced on the next save.
 - **Versioned key prefix (`v1`)** leaves room for future migrations.
-- Not handled: multi-tab sync, quota-exceeded recovery (only a basic error toast).
+- If a write fails (e.g. storage is full), Save, Submit and Delete show a message and keep the user's work. Not handled: multi-tab sync.
 
 ---
 

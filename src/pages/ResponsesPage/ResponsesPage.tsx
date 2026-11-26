@@ -10,7 +10,9 @@ import {
   sortByNewest,
 } from '../../storage/responseStore'
 import type { FormResponse } from '../../storage/schema'
+import { STORAGE_FULL_MESSAGE } from '../../storage/storageMessages'
 import { loadTemplate } from '../../storage/templateStore'
+import Banner from '../../ui/Banner/Banner'
 import { Button, LinkButton } from '../../ui/Button/Button'
 import ConfirmDialog from '../../ui/ConfirmDialog/ConfirmDialog'
 import { ChevronLeftIcon, DownloadIcon, PlusIcon, TrashIcon } from '../../ui/icons/icons'
@@ -26,6 +28,7 @@ export default function ResponsesPage() {
     sortByNewest(loadResponsesForTemplate(templateId)),
   )
   const [responseToDelete, setResponseToDelete] = useState<FormResponse | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   if (!template) {
     return <NotFoundPage />
@@ -35,7 +38,12 @@ export default function ResponsesPage() {
     if (!responseToDelete) {
       return
     }
-    deleteResponse(responseToDelete.id)
+    if (!deleteResponse(responseToDelete.id)) {
+      setResponseToDelete(null)
+      setDeleteError(STORAGE_FULL_MESSAGE)
+      return
+    }
+    setDeleteError(null)
     setResponses((prevResponses) => {
       const nextResponses = prevResponses.filter(
         (response) => response.id !== responseToDelete.id,
@@ -62,6 +70,14 @@ export default function ResponsesPage() {
           New response
         </LinkButton>
       </div>
+
+      {deleteError && (
+        <div className={styles.error}>
+          <Banner tone="warning" onDismiss={() => setDeleteError(null)}>
+            {deleteError}
+          </Banner>
+        </div>
+      )}
 
       {responses.length === 0 ? (
         <div className={styles.empty}>

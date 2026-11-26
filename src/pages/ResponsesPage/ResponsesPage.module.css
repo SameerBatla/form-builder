@@ -131,3 +131,10 @@
 .emptyTitle {
   font-weight: 600;
 }
+
+.error {
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}

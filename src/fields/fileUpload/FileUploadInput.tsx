@@ -89,7 +89,8 @@ export default function FileUploadInput({
           </Button>
         </p>
         <p className={styles.hint}>
-          {typesHint} · up to {pluralize(maxFiles, 'file')}
+          {typesHint} · up to {pluralize(maxFiles, 'file')} · only the file name and size
+          are saved
         </p>
         <input
           ref={fileInputRef}
