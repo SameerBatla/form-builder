@@ -28,7 +28,7 @@ export default function NumberConfig({ field, onChange }: ConfigPanelProps<'numb
         >
           {decimalOptions.map((places) => (
             <option key={places} value={places}>
-              {places === 0 ? 'Whole numbers' : `${places} (${(0).toFixed(places)})`}
+              {places}
             </option>
           ))}
         </Select>
